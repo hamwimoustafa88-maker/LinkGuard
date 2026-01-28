@@ -124,7 +124,7 @@ export default function EducationFooter() {
                                 <h3 className="text-3xl font-bold mb-2 bg-gradient-to-r from-white to-gray-300 bg-clip-text text-transparent">
                                     مصطفى الحموي
                                 </h3>
-                                <p className="text-cyber-glow mb-6 font-mono text-sm tracking-wide">Senior Full Stack Engineer & Cybersecurity Specialist</p>
+                                <p className="text-cyber-glow mb-6 font-mono text-sm tracking-wide">Software Developer | International Training Leader in Scouting</p>
 
                                 <div className="space-y-3 max-w-xs mx-auto">
                                     <a
