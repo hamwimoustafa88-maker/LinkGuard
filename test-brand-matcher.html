@@ -1,0 +1,115 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Brand Matcher Test</title>
+</head>
+<body>
+    <h1>Brand Matcher Test</h1>
+    <div id="results"></div>
+
+    <script type="module">
+        // Paste the brand matcher logic here for testing
+        const FAMOUS_BRANDS = [
+            {
+                name: 'Facebook',
+                keywords: ['facebook', 'face-book', 'face book', 'fb', 'meta'],
+                legitimateDomains: ['facebook.com', 'fb.com', 'meta.com'],
+                arabicName: 'فيسبوك',
+            }
+        ];
+
+        const SUSPICIOUS_KEYWORDS = [
+            'login', 'signin', 'secure', 'update', 'verify', 'account',
+            'confirm', 'suspended', 'locked', 'urgent', 'billing'
+        ];
+
+        const SUSPICIOUS_TLDS = [
+            '.xyz', '.top', '.tk', '.ml', '.ga', '.cf', '.gq',
+            '.pw', '.cc', '.ws', '.info', '.biz'
+        ];
+
+        function analyzeBrandMismatch(url) {
+            try {
+                const urlObj = new URL(url.startsWith('http') ? url : `https://${url}`);
+                const hostname = urlObj.hostname.toLowerCase();
+                const fullUrl = url.toLowerCase();
+
+                for (const brand of FAMOUS_BRANDS) {
+                    const containsBrandKeyword = brand.keywords.some(keyword =>
+                        hostname.includes(keyword) || fullUrl.includes(keyword)
+                    );
+
+                    if (!containsBrandKeyword) continue;
+
+                    const isLegitimate = brand.legitimateDomains.some(domain =>
+                        hostname === domain || hostname.endsWith(`.${domain}`)
+                    );
+
+                    if (isLegitimate) continue;
+
+                    let severity = 'medium';
+                    const hasSuspiciousKeyword = SUSPICIOUS_KEYWORDS.some(kw => fullUrl.includes(kw));
+                    const hasSuspiciousTLD = SUSPICIOUS_TLDS.some(tld => hostname.endsWith(tld));
+                    const hasDashes = hostname.includes('-');
+
+                    if ((hasSuspiciousKeyword && hasDashes) || (hasSuspiciousKeyword && hasSuspiciousTLD)) {
+                        severity = 'high';
+                    } else if (hasSuspiciousKeyword || hasDashes || hasSuspiciousTLD) {
+                        severity = 'medium';
+                    } else {
+                        severity = 'low';
+                    }
+
+                    let reason = 'يحتوي الرابط على اسم العلامة التجارية';
+                    if (hasDashes) reason += '، ويستخدم شرطات في النطاق';
+                    if (hasSuspiciousTLD) reason += '، ويستخدم امتداد نطاق مشبوه';
+                    if (hasSuspiciousKeyword) reason += '، ويحتوي على كلمات تصيد احتيالي';
+
+                    return {
+                        detected: true,
+                        brandName: brand.name,
+                        brandNameArabic: brand.arabicName,
+                        fakeDomain: hostname,
+                        legitimateDomains: brand.legitimateDomains,
+                        reason,
+                        severity,
+                    };
+                }
+
+                return {
+                    detected: false,
+                    severity: 'low',
+                };
+            } catch (error) {
+                return {
+                    detected: false,
+                    severity: 'low',
+                };
+            }
+        }
+
+        // Test cases
+        const testCases = [
+            'face-book-login.xyz',
+            'facebook-verify.net',
+            'facebook.com',
+        ];
+
+        const resultsDiv = document.getElementById('results');
+        testCases.forEach(url => {
+            const result = analyzeBrandMismatch(url);
+            const div = document.createElement('div');
+            div.style.marginBottom = '20px';
+            div.style.padding = '10px';
+            div.style.backgroundColor = result.detected ? '#ffcccc' : '#ccffcc';
+            div.innerHTML = `
+                <h3>${url}</h3>
+                <pre>${JSON.stringify(result, null, 2)}</pre>
+            `;
+            resultsDiv.appendChild(div);
+        });
+    </script>
+</body>
+</html>

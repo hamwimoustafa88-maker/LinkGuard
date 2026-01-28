@@ -1,0 +1,71 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  --cyber-dark: #0a0e27;
+  --cyber-navy: #0f172a;
+  --cyber-safe: #00ff88;
+  --cyber-danger: #ff0055;
+  --cyber-warning: #ffaa00;
+  --cyber-glow: #00ffff;
+}
+
+@layer base {
+  body {
+    @apply bg-cyber-dark text-white font-cairo;
+    background: linear-gradient(135deg, #0a0e27 0%, #0f172a 100%);
+    min-height: 100vh;
+  }
+
+
+  /* Custom scrollbar */
+  ::-webkit-scrollbar {
+    width: 10px;
+  }
+
+  ::-webkit-scrollbar-track {
+    background: var(--cyber-dark);
+  }
+
+  ::-webkit-scrollbar-thumb {
+    background: var(--cyber-safe);
+    border-radius: 5px;
+  }
+
+  ::-webkit-scrollbar-thumb:hover {
+    background: var(--cyber-glow);
+  }
+}
+
+@layer utilities {
+  .neon-glow-safe {
+    box-shadow: 0 0 10px var(--cyber-safe),
+      0 0 20px var(--cyber-safe),
+      0 0 30px var(--cyber-safe);
+  }
+
+  .neon-glow-danger {
+    box-shadow: 0 0 10px var(--cyber-danger),
+      0 0 20px var(--cyber-danger),
+      0 0 30px var(--cyber-danger);
+  }
+
+  .neon-glow-warning {
+    box-shadow: 0 0 10px var(--cyber-warning),
+      0 0 20px var(--cyber-warning),
+      0 0 30px var(--cyber-warning);
+  }
+
+  .glass-effect {
+    background: rgba(255, 255, 255, 0.05);
+    backdrop-filter: blur(10px);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+  }
+
+  .terminal-text {
+    font-family: 'Courier New', monospace;
+    color: var(--cyber-safe);
+    text-shadow: 0 0 5px var(--cyber-safe);
+  }
+}
