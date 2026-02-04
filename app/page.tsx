@@ -1,21 +1,41 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect, Suspense } from 'react';
+import { useSearchParams } from 'next/navigation';
 import HeroSection from '@/components/HeroSection';
 import StatusTerminal from '@/components/StatusTerminal';
 import VerdictDashboard from '@/components/VerdictDashboard';
-
 import EducationFooter from '@/components/EducationFooter';
+import LanguageToggle from '@/components/LanguageToggle';
+import ThreatCounter from '@/components/ThreatCounter';
+import { useLanguage } from '@/components/LanguageContext';
 import { ScanStatus, VerdictType, type ScanResult } from '@/types';
 import { analyzeBrandMismatch } from '@/utils/brandMatcher';
 
-export default function Home() {
+function HomeContent() {
+    const { t } = useLanguage();
+    const searchParams = useSearchParams();
     const [scanResult, setScanResult] = useState<ScanResult>({
         status: ScanStatus.IDLE,
         verdict: VerdictType.UNKNOWN,
     });
 
+    // Auto-scan if query param exists
+    useEffect(() => {
+        const urlParam = searchParams.get('url');
+        if (urlParam && scanResult.status === ScanStatus.IDLE) {
+            handleScan(urlParam);
+        }
+    }, [searchParams]); // Dependencies adjusted to run only when params change or initially
+
     const handleScan = async (url: string) => {
+        // ... (rest of handleScan function is same, but I need to include it here or just reference it if I could, but I can't. 
+        // PROMPT: I need to replace Home component with Home wrapped in Suspense and move logic inside.)
+
+        // Actually, just making Home async/client requires Suspense if using useSearchParams in some Next versions? 
+        // 'use client' is already set.
+        // It's better to extract content to a component.
+
         setScanResult({
             status: ScanStatus.UNSHORTENING,
             verdict: VerdictType.UNKNOWN,
@@ -110,7 +130,7 @@ export default function Home() {
             setScanResult({
                 status: ScanStatus.ERROR,
                 verdict: VerdictType.UNKNOWN,
-                error: error.message || 'حدث خطأ أثناء الفحص',
+                error: error.message || t('statusError'),
             });
         }
     };
@@ -122,13 +142,19 @@ export default function Home() {
             <div className="fixed inset-0 bg-[radial-gradient(ellipse_at_top,_var(--tw-gradient-stops))] from-cyan-900/20 via-transparent to-transparent" />
 
             <div className="relative z-10 container mx-auto px-4 py-8">
+                {/* Navbar / Top Bar */}
+                <div className="flex flex-col md:flex-row justify-between items-center mb-8 gap-4">
+                    <ThreatCounter />
+                    <LanguageToggle />
+                </div>
+
                 {/* Header */}
-                <header className="text-center mb-16 mt-8">
+                <header className="text-center mb-16 mt-4">
                     <h1 className="text-6xl font-bold mb-4 bg-gradient-to-r from-cyber-safe to-cyber-glow bg-clip-text text-transparent">
-                        LinkGuard
+                        {t('appTitle')}
                     </h1>
-                    <p className="text-2xl text-cyber-glow font-tajawal">كاشف الروابط الخبيثة</p>
-                    <p className="text-gray-400 mt-2">حماية متقدمة ضد الروابط المشبوهة والبرمجيات الخبيثة</p>
+                    <p className="text-2xl text-cyber-glow font-tajawal">{t('appSubtitle')}</p>
+                    <p className="text-gray-400 mt-2">{t('appDescription')}</p>
                 </header>
 
                 {/* Hero Section */}
@@ -158,15 +184,22 @@ export default function Home() {
                 <footer className="mt-12 text-center pb-8 border-t border-gray-800 pt-8">
                     <div className="bg-red-900/10 border border-red-500/20 rounded-lg p-4 inline-block max-w-2xl mx-auto">
                         <p className="text-red-400 font-bold text-lg mb-1">
-                            ⚠️ إخلاء مسؤولية هام
+                            {t('disclaimerTitle')}
                         </p>
                         <p className="text-gray-400 text-sm">
-                            فحص الروابط لا يعني الموافقة على محتواها. الدخول إلى أي رابط يكون على مسؤوليتك الخاصة.
-                            النتائج تعتمد على قواعد بيانات خارجية وقد لا تكون دقيقة بنسبة 100%.
+                            {t('disclaimerText')}
                         </p>
                     </div>
                 </footer>
             </div>
         </main>
+    );
+}
+
+export default function Home() {
+    return (
+        <Suspense fallback={<div className="min-h-screen bg-cyber-dark text-white flex items-center justify-center">Loading...</div>}>
+            <HomeContent />
+        </Suspense>
     );
 }

@@ -1,6 +1,7 @@
 import type { Metadata } from 'next';
 import { Cairo, Tajawal } from 'next/font/google';
 import './globals.css';
+import Providers from '@/components/Providers';
 
 const cairo = Cairo({
     subsets: ['arabic', 'latin'],
@@ -26,10 +27,29 @@ export default function RootLayout({
 }: Readonly<{
     children: React.ReactNode;
 }>) {
+    const jsonLd = {
+        "@context": "https://schema.org",
+        "@type": "SoftwareApplication",
+        "name": "LinkGuard",
+        "applicationCategory": "SecurityApplication",
+        "operatingSystem": "All",
+        "offers": {
+            "@type": "Offer",
+            "price": "0",
+            "priceCurrency": "USD"
+        }
+    };
+
     return (
         <html lang="ar" dir="rtl">
-            <body className={`${cairo.variable} ${tajawal.variable} antialiased`}>
-                {children}
+            <body className={`${cairo.variable} ${tajawal.variable} antialiased bg-cyber-dark text-white`}>
+                <script
+                    type="application/ld+json"
+                    dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
+                />
+                <Providers>
+                    {children}
+                </Providers>
             </body>
         </html>
     );

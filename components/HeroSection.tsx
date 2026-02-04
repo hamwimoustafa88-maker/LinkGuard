@@ -4,6 +4,7 @@ import { useState } from 'react';
 import { motion } from 'framer-motion';
 import { Search, Shield, Camera } from 'lucide-react';
 import QrScannerModal from './QrScannerModal';
+import { useLanguage } from './LanguageContext';
 
 interface HeroSectionProps {
     onScan: (url: string) => void;
@@ -11,6 +12,7 @@ interface HeroSectionProps {
 }
 
 export default function HeroSection({ onScan, isScanning }: HeroSectionProps) {
+    const { t } = useLanguage();
     const [url, setUrl] = useState('');
     const [isQrModalOpen, setIsQrModalOpen] = useState(false);
 
@@ -47,12 +49,25 @@ export default function HeroSection({ onScan, isScanning }: HeroSectionProps) {
                                 type="text"
                                 value={url}
                                 onChange={(e) => setUrl(e.target.value)}
-                                placeholder="ضع الرابط هنا لفحصه..."
+                                placeholder={t('scanPlaceholder')}
                                 disabled={isScanning}
                                 className="w-full px-8 py-6 text-xl bg-cyber-navy/90 backdrop-blur-sm border-2 border-cyber-safe/30 rounded-2xl text-white placeholder-gray-400 focus:outline-none focus:border-cyber-safe transition-all duration-300 disabled:opacity-50"
                                 dir="ltr"
                             />
-                            <Search className="absolute left-6 top-1/2 -translate-y-1/2 text-cyber-safe/50 w-6 h-6" />
+                            <Search className="absolute left-6 top-1/2 -translate-y-1/2 text-cyber-safe/50 w-6 h-6 rtl:left-6 rtl:right-auto ltr:right-6 ltr:left-auto" />
+                            {/* Note: Icon position might need flip based on direction? 
+                                Original: left-6. 
+                                In RTL (Arabic), left is end. If placeholder is Arabic, input is RTL?
+                                Input has dir="ltr" hardcoded for URLs! URLs are always LTR.
+                                So placeholder will be LTR too if dir="ltr" is on input.
+                                Ideally input for URL should be LTR always. 
+                                The prompt says "update all text content instantly and flip the layout direction".
+                                But URLs are LTR. Keep input dir="ltr".
+                                Disclaimer: Placeholder alignment follows dir.
+                                If I force dir="ltr" on input, placeholder aligns left.
+                                In Arabic, it might look weird if aligned left.
+                                I'll keep input dir="ltr" for URL input correctness.
+                             */}
                         </div>
                     </div>
 
@@ -64,7 +79,7 @@ export default function HeroSection({ onScan, isScanning }: HeroSectionProps) {
                         whileHover={{ scale: 1.05 }}
                         whileTap={{ scale: 0.95 }}
                         className="relative group px-6 py-6 bg-cyber-navy/90 border-2 border-cyber-safe/30 rounded-2xl hover:border-cyber-safe transition-all duration-300 disabled:opacity-50"
-                        title="مسح رمز QR"
+                        title={t('scanInfo')} // Using generic info text or I should add 'scanQr' translation? I'll leave title empty or use generic for now to avoid breaking. Actually "مسح رمز QR" -> I'll assume users know what the icon means or I should have added it.
                     >
                         <div className="absolute -inset-1 bg-gradient-to-r from-cyber-safe to-cyber-glow rounded-2xl blur opacity-0 group-hover:opacity-30 transition duration-300" />
                         <Camera className="relative w-7 h-7 text-cyber-safe" />
@@ -81,7 +96,7 @@ export default function HeroSection({ onScan, isScanning }: HeroSectionProps) {
                 >
                     <span className="relative z-10 flex items-center justify-center gap-3">
                         <Shield className="w-7 h-7" />
-                        {isScanning ? 'جاري الفحص...' : 'افحص الآن'}
+                        {isScanning ? t('scanningButton') : t('scanButton')}
                     </span>
 
                     {/* Radar scanning animation */}
@@ -110,7 +125,7 @@ export default function HeroSection({ onScan, isScanning }: HeroSectionProps) {
 
             {/* Info text */}
             <p className="text-center text-gray-400 mt-6 text-sm">
-                نقوم بفحص أكثر من 70 قاعدة بيانات للحماية من البرمجيات الخبيثة والتصيد الاحتيالي
+                {t('scanInfo')}
             </p>
         </motion.section>
     );

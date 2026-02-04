@@ -5,38 +5,40 @@ import Link from 'next/link';
 import Image from 'next/image';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Shield, Eye, Lock, AlertTriangle, Code2, Phone, Mail, X, Linkedin, Activity } from 'lucide-react';
-
-const tips = [
-    {
-        icon: Shield,
-        title: 'لا تثق بالمصادر المجهولة',
-        description: 'تجنب النقر على الروابط من مصادر غير موثوقة أو رسائل غريبة',
-    },
-    {
-        icon: Eye,
-        title: 'افحص قبل أن تنقر',
-        description: 'استخدم أدوات الفحص للتحقق من سلامة الروابط قبل زيارتها',
-    },
-    {
-        icon: Lock,
-        title: 'تحقق من HTTPS',
-        description: 'تأكد أن الموقع يستخدم بروتوكول HTTPS الآمن',
-    },
-    {
-        icon: AlertTriangle,
-        title: 'احذر من التصيد الاحتيالي',
-        description: 'لا تدخل معلوماتك الشخصية على مواقع مشبوهة',
-    },
-];
+import { useLanguage } from './LanguageContext';
 
 export default function EducationFooter() {
+    const { t, language } = useLanguage();
     const [isDeveloperModalOpen, setIsDeveloperModalOpen] = useState(false);
+
+    const tips = [
+        {
+            icon: Shield,
+            title: t('tip1Title'),
+            description: t('tip1Desc'),
+        },
+        {
+            icon: Eye,
+            title: t('tip2Title'),
+            description: t('tip2Desc'),
+        },
+        {
+            icon: Lock,
+            title: t('tip3Title'),
+            description: t('tip3Desc'),
+        },
+        {
+            icon: AlertTriangle,
+            title: t('tip4Title'),
+            description: t('tip4Desc'),
+        },
+    ];
 
     return (
         <section className="mt-24 mb-12 relative">
             <div className="text-center mb-12">
-                <h2 className="text-4xl font-bold mb-4 text-cyber-glow">نصائح الأمان السيبراني</h2>
-                <p className="text-gray-400">احمِ نفسك من التهديدات الإلكترونية</p>
+                <h2 className="text-4xl font-bold mb-4 text-cyber-glow">{t('tipsTitle')}</h2>
+                <p className="text-gray-400">{t('tipsSubtitle')}</p>
             </div>
 
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 max-w-7xl mx-auto">
@@ -69,7 +71,7 @@ export default function EducationFooter() {
                     className="flex items-center gap-2 px-4 py-2 bg-cyber-navy/50 hover:bg-cyber-navy border border-cyber-glow/30 rounded-full text-cyber-glow text-sm transition-all hover:scale-105"
                 >
                     <Code2 className="w-4 h-4" />
-                    <span>عن المطور</span>
+                    <span>{t('aboutDev')}</span>
                 </button>
 
                 <Link
@@ -77,13 +79,13 @@ export default function EducationFooter() {
                     className="flex items-center gap-2 px-4 py-2 bg-cyber-safe/10 hover:bg-cyber-safe/20 border border-cyber-safe/30 rounded-full text-cyber-safe text-sm transition-all hover:scale-105"
                 >
                     <Activity className="w-4 h-4" />
-                    <span>فحص الخدمات</span>
+                    <span>{t('checkServices')}</span>
                 </Link>
             </div>
 
             {/* Footer */}
             <div className="text-center mt-8 text-gray-500 text-sm">
-                <p>© 2026 LinkGuard - كاشف الروابط | حماية متقدمة ضد التهديدات الإلكترونية</p>
+                <p>{t('footerCopy')}</p>
             </div>
 
             {/* Developer Modal */}
@@ -105,7 +107,7 @@ export default function EducationFooter() {
                         >
                             <button
                                 onClick={() => setIsDeveloperModalOpen(false)}
-                                className="absolute top-4 left-4 p-2 text-gray-400 hover:text-white transition-colors"
+                                className={`absolute top-4 ${language === 'ar' ? 'left-4' : 'right-4'} p-2 text-gray-400 hover:text-white transition-colors`}
                             >
                                 <X className="w-6 h-6" />
                             </button>
@@ -122,9 +124,9 @@ export default function EducationFooter() {
                                     </div>
                                 </div>
                                 <h3 className="text-3xl font-bold mb-2 bg-gradient-to-r from-white to-gray-300 bg-clip-text text-transparent">
-                                    مصطفى الحموي
+                                    {t('devName')}
                                 </h3>
-                                <p className="text-cyber-glow mb-6 font-mono text-sm tracking-wide">Software Developer | International Training Leader in Scouting</p>
+                                <p className="text-cyber-glow mb-6 font-mono text-sm tracking-wide">{t('devTitle')}</p>
 
                                 <div className="space-y-3 max-w-xs mx-auto">
                                     <a
@@ -134,7 +136,7 @@ export default function EducationFooter() {
                                         className="flex items-center justify-center gap-3 p-3 bg-[#0077b5]/10 hover:bg-[#0077b5]/30 border border-[#0077b5]/50 rounded-xl transition-all group hover:scale-105 hover:shadow-[0_0_15px_rgba(0,119,181,0.3)]"
                                     >
                                         <Linkedin className="w-5 h-5 text-[#0077b5]" />
-                                        <span className="text-gray-200 font-bold group-hover:text-white transition-colors">LinkedIn Profile</span>
+                                        <span className="text-gray-200 font-bold group-hover:text-white transition-colors">{t('linkedin')}</span>
                                     </a>
 
                                     <a

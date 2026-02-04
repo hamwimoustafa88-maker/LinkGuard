@@ -3,21 +3,26 @@
 import { motion } from 'framer-motion';
 import { ScanStatus } from '@/types';
 import { Loader2 } from 'lucide-react';
+import { useLanguage } from './LanguageContext';
 
 interface StatusTerminalProps {
     status: ScanStatus;
 }
 
-const statusMessages: Record<ScanStatus, string> = {
-    [ScanStatus.IDLE]: '',
-    [ScanStatus.UNSHORTENING]: 'جاري فك اختصار الرابط...',
-    [ScanStatus.SCANNING]: 'الاتصال بقواعد البيانات الأمنية...',
-    [ScanStatus.ANALYZING]: 'تحليل التهديدات المحتملة...',
-    [ScanStatus.COMPLETE]: 'اكتمل الفحص',
-    [ScanStatus.ERROR]: 'حدث خطأ',
-};
-
 export default function StatusTerminal({ status }: StatusTerminalProps) {
+    const { t } = useLanguage();
+
+    const getStatusText = (status: ScanStatus) => {
+        switch (status) {
+            case ScanStatus.UNSHORTENING: return t('statusUnshortening');
+            case ScanStatus.SCANNING: return t('statusScanning');
+            case ScanStatus.ANALYZING: return t('statusAnalyzing');
+            case ScanStatus.COMPLETE: return t('statusComplete');
+            case ScanStatus.ERROR: return t('statusError');
+            default: return '';
+        }
+    };
+
     return (
         <motion.div
             initial={{ opacity: 0, scale: 0.95 }}
@@ -34,7 +39,7 @@ export default function StatusTerminal({ status }: StatusTerminalProps) {
                             animate={{ opacity: 1, x: 0 }}
                             className="terminal-text text-2xl font-mono"
                         >
-                            {statusMessages[status]}
+                            {getStatusText(status)}
                         </motion.p>
                         <div className="flex gap-1 mt-3">
                             {[0, 1, 2].map((i) => (

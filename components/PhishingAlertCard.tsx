@@ -3,12 +3,14 @@
 import { motion } from 'framer-motion';
 import { AlertTriangle, ShieldAlert, HelpCircle } from 'lucide-react';
 import { PhishingAlert } from '@/types';
+import { useLanguage } from './LanguageContext';
 
 interface PhishingAlertCardProps {
     alert: PhishingAlert;
 }
 
 export default function PhishingAlertCard({ alert }: PhishingAlertCardProps) {
+    const { t } = useLanguage();
     if (!alert.detected) return null;
 
     const severityConfig = {
@@ -51,10 +53,10 @@ export default function PhishingAlertCard({ alert }: PhishingAlertCardProps) {
             <div className="text-center mb-6">
                 <Icon className={`w-16 h-16 mx-auto mb-4 ${config.textColor}`} />
                 <h2 className={`text-4xl font-bold mb-2 ${config.textColor}`}>
-                    ⚠️ تحذير: انتحال هوية علامة تجارية
+                    {t('phishingTitle')}
                 </h2>
                 <p className="text-xl text-gray-300">
-                    هذا الموقع يحاول انتحال شخصية <span className="font-bold">{alert.brandNameArabic || alert.brandName}</span>
+                    {t('phishingSubtitle')} <span className="font-bold">{alert.brandNameArabic || alert.brandName}</span>
                 </p>
             </div>
 
@@ -67,7 +69,7 @@ export default function PhishingAlertCard({ alert }: PhishingAlertCardProps) {
                             <span className="text-4xl font-bold text-white">{alert.brandName?.charAt(0)}</span>
                         </div>
                     </div>
-                    <p className="text-cyber-safe font-bold text-lg mb-1">العلامة الأصلية</p>
+                    <p className="text-cyber-safe font-bold text-lg mb-1">{t('originalBrand')}</p>
                     <p className="text-white font-semibold">{alert.brandName}</p>
                     <p className="text-gray-400 text-sm">{alert.brandNameArabic}</p>
                 </div>
@@ -84,17 +86,17 @@ export default function PhishingAlertCard({ alert }: PhishingAlertCardProps) {
                             <HelpCircle className={`w-12 h-12 ${config.textColor}`} />
                         </div>
                     </div>
-                    <p className={`font-bold text-lg mb-1 ${config.textColor}`}>الموقع المزيف</p>
+                    <p className={`font-bold text-lg mb-1 ${config.textColor}`}>{t('fakeSite')}</p>
                     <p className="text-white font-mono text-sm break-all" dir="ltr">{alert.fakeDomain}</p>
                 </div>
             </div>
 
             {/* Details */}
             <div className={`${config.bgColor} rounded-2xl p-6 mb-6`}>
-                <h3 className="text-xl font-bold text-white mb-3">📋 التفاصيل:</h3>
+                <h3 className="text-xl font-bold text-white mb-3">{t('details')}</h3>
                 <div className="space-y-3">
                     <div>
-                        <p className="text-gray-400 text-sm mb-1">النطاقات الشرعية:</p>
+                        <p className="text-gray-400 text-sm mb-1">{t('legitDomains')}</p>
                         <div className="flex flex-wrap gap-2">
                             {alert.legitimateDomains?.map((domain, index) => (
                                 <span
@@ -110,27 +112,27 @@ export default function PhishingAlertCard({ alert }: PhishingAlertCardProps) {
 
                     {alert.reason && (
                         <div>
-                            <p className="text-gray-400 text-sm mb-1">السبب:</p>
+                            <p className="text-gray-400 text-sm mb-1">{t('reason')}</p>
                             <p className="text-white">{alert.reason}</p>
                         </div>
                     )}
 
                     <div>
-                        <p className="text-gray-400 text-sm mb-1">مستوى الخطورة:</p>
+                        <p className="text-gray-400 text-sm mb-1">{t('severity')}</p>
                         <div className="flex items-center gap-2">
                             <div className="flex gap-1">
                                 {[1, 2, 3].map((level) => (
                                     <div
                                         key={level}
                                         className={`w-8 h-3 rounded ${level <= (alert.severity === 'high' ? 3 : alert.severity === 'medium' ? 2 : 1)
-                                                ? config.borderColor.replace('border-', 'bg-')
-                                                : 'bg-gray-700'
+                                            ? config.borderColor.replace('border-', 'bg-')
+                                            : 'bg-gray-700'
                                             }`}
                                     />
                                 ))}
                             </div>
                             <span className={`font-bold ${config.textColor}`}>
-                                {alert.severity === 'high' ? 'عالي' : alert.severity === 'medium' ? 'متوسط' : 'منخفض'}
+                                {alert.severity === 'high' ? t('severityHigh') : alert.severity === 'medium' ? t('severityMedium') : t('severityLow')}
                             </span>
                         </div>
                     </div>
@@ -140,7 +142,7 @@ export default function PhishingAlertCard({ alert }: PhishingAlertCardProps) {
             {/* Warning message */}
             <div className={`text-center p-4 ${config.bgColor} border-2 ${config.borderColor} rounded-xl`}>
                 <p className={`font-bold ${config.textColor} text-lg`}>
-                    🚨 لا تقم بإدخال أي معلومات شخصية أو بيانات حساسة في هذا الموقع!
+                    {t('phishingWarning')}
                 </p>
             </div>
         </motion.div>
