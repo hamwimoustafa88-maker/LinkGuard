@@ -39,7 +39,8 @@ export default function ThreatCounter() {
                         exit={{ opacity: 0, y: -10 }}
                         className="text-xl font-mono font-bold text-cyber-danger text-shadow-glow"
                     >
-                        {count.toLocaleString()}
+                        {count.toLocaleString('en-US')}
+
                     </motion.span>
                 </AnimatePresence>
             </div>
