@@ -53,11 +53,11 @@ export function LanguageProvider({ children }: { children: React.ReactNode }) {
         return translations[language][key] || key;
     };
 
-    if (!mounted) {
-        // Render with default AR to match server SS potentially, or return null to avoid mismatch
-        // Returning children with default is better for SEO/first paint if it matches
-        return <>{children}</>;
-    }
+    // Fix: Always render the Provider, even during SSR/Pre-rendering. 
+    // The previous check for (!mounted) caused the Provider to be missing, throwing errors in children using useLanguage.
+    // Initial render will use default 'ar', matching the server. Hydration will be fine.
+    // Client-side effect will update to 'en' if saved in localStorage.
+
 
     return (
         <LanguageContext.Provider value={{ language, direction, setLanguage, toggleLanguage, t }}>
