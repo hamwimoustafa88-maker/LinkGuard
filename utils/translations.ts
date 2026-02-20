@@ -105,6 +105,13 @@ export const translations = {
         shareWhatsApp: 'مشاركة النتيجة عبر واتساب',
         shareTextSafe: '✅ هذا الرابط آمن بنسبة {score}% وفقاً لفحص LinkGuard',
         shareTextDanger: '⛔️ تحذير! هذا الرابط خطير! تم الكشف عنه بواسطة LinkGuard',
+        copyUrl: 'نسخ الرابط',
+        copiedUrl: 'تم النسخ!',
+        goToUrl: 'الذهاب إلى الرابط',
+        exportReport: 'تصدير التقرير',
+        vendorsFlagged: '{threats} حركات أمنية من أصل {total} اكتشفت تهديداً في هذا الرابط.',
+        scanDateTime: 'تاريخ ووقت الفحص',
+        newScan: 'فحص جديد',
     },
     en: {
         // Meta
@@ -209,5 +216,12 @@ export const translations = {
         shareWhatsApp: 'Share Result on WhatsApp',
         shareTextSafe: '✅ This link is {score}% Safe according to LinkGuard scan',
         shareTextDanger: '⛔️ Warning! This link is dangerous! Detected by LinkGuard',
+        copyUrl: 'Copy URL',
+        copiedUrl: 'Copied!',
+        goToUrl: 'Visit Website',
+        exportReport: 'Export Report',
+        vendorsFlagged: '{threats} out of {total} security vendors flagged this URL as malicious.',
+        scanDateTime: 'Scan Date & Time',
+        newScan: 'New Scan',
     }
 };

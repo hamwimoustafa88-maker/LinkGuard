@@ -149,24 +149,30 @@ function HomeContent() {
                     <LanguageToggle />
                 </div>
 
-                {/* Header */}
-                <header className="text-center mb-16 mt-4 flex flex-col items-center">
-                    <div className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-cyber-safe/10 border border-cyber-safe/30 text-cyber-safe text-sm font-medium mb-6">
-                        <Sparkles className="w-4 h-4" />
-                        <span>{t('poweredByAI')}</span>
-                    </div>
-                    <div className="flex items-center justify-center gap-4 mb-4">
-                        <ShieldCheck className="w-14 h-14 text-cyber-safe" />
-                        <h1 className="text-6xl font-bold bg-gradient-to-r from-cyber-safe to-cyber-glow bg-clip-text text-transparent">
-                            {t('appTitle')}
-                        </h1>
-                    </div>
-                    <p className="text-2xl text-cyber-glow font-tajawal">{t('appSubtitle')}</p>
-                    <p className="text-gray-400 mt-2">{t('appDescription')}</p>
-                </header>
+                {/* Header - Hidden when scan is active/complete to save space */}
+                {scanResult.status === ScanStatus.IDLE && (
+                    <header className="text-center mb-16 mt-4 flex flex-col items-center">
+                        <div className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-cyber-safe/10 border border-cyber-safe/30 text-cyber-safe text-sm font-medium mb-6">
+                            <Sparkles className="w-4 h-4" />
+                            <span>{t('poweredByAI')}</span>
+                        </div>
+                        <div className="flex items-center justify-center gap-4 mb-4">
+                            <ShieldCheck className="w-14 h-14 text-cyber-safe" />
+                            <h1 className="text-6xl font-bold bg-gradient-to-r from-cyber-safe to-cyber-glow bg-clip-text text-transparent">
+                                {t('appTitle')}
+                            </h1>
+                        </div>
+                        <p className="text-2xl text-cyber-glow font-tajawal">{t('appSubtitle')}</p>
+                        <p className="text-gray-400 mt-2">{t('appDescription')}</p>
+                    </header>
+                )}
 
                 {/* Hero Section */}
-                <HeroSection onScan={handleScan} isScanning={scanResult.status !== ScanStatus.IDLE && scanResult.status !== ScanStatus.COMPLETE && scanResult.status !== ScanStatus.ERROR} />
+                <HeroSection
+                    onScan={handleScan}
+                    isScanning={scanResult.status !== ScanStatus.IDLE && scanResult.status !== ScanStatus.COMPLETE && scanResult.status !== ScanStatus.ERROR}
+                    isCompact={scanResult.status === ScanStatus.COMPLETE || scanResult.status === ScanStatus.ERROR}
+                />
 
                 {/* Status Terminal */}
                 {scanResult.status !== ScanStatus.IDLE && scanResult.status !== ScanStatus.COMPLETE && (

@@ -1,8 +1,9 @@
 'use client';
 
+import { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
 import { VerdictType, type ScanResult } from '@/types';
-import { ShieldCheck, ShieldAlert, AlertTriangle, Globe, Server, Flag, Share2 } from 'lucide-react';
+import { ShieldCheck, ShieldAlert, AlertTriangle, Globe, Server, Flag, Share2, Download, Copy, ExternalLink, Clock, Check } from 'lucide-react';
 import SandboxWindow from '@/components/SandboxWindow';
 import PhishingAlertCard from '@/components/PhishingAlertCard';
 import { useLanguage } from './LanguageContext';
@@ -14,6 +15,13 @@ interface VerdictDashboardProps {
 export default function VerdictDashboard({ result }: VerdictDashboardProps) {
     const { t } = useLanguage();
     const { verdict, vtStats, screenshotUrl, networkInfo, unshortenedUrl, vtDetails } = result;
+    const [copied, setCopied] = useState(false);
+    const [currentTime, setCurrentTime] = useState('');
+
+    useEffect(() => {
+        // Set time on client safely to avoid hydration mismatch
+        setCurrentTime(new Date().toLocaleString());
+    }, []);
 
     const verdictConfig = {
         [VerdictType.SAFE]: {
@@ -85,6 +93,16 @@ export default function VerdictDashboard({ result }: VerdictDashboardProps) {
             {/* Main Verdict Card */}
             <div className={`glass-effect rounded-3xl p-10 mb-8 border-4 ${config.colorClass} ${config.glowClass} relative overflow-hidden`}>
                 <div className="absolute inset-0 bg-gradient-to-b from-transparent to-black/20 pointer-events-none" />
+
+                {/* Export / Download PDF Button */}
+                <button
+                    onClick={() => window.print()}
+                    className="absolute top-4 rtl:left-4 ltr:right-4 p-2 bg-cyber-navy/50 hover:bg-cyber-navy rounded-lg border border-gray-600/50 text-gray-400 hover:text-white transition-colors flex items-center gap-2 z-20 shadow-lg"
+                    title={t('exportReport')}
+                >
+                    <Download className="w-5 h-5" />
+                    <span className="hidden sm:inline text-sm font-bold">{t('exportReport')}</span>
+                </button>
                 <div className="text-center relative z-10">
                     <Icon className={`w-24 h-24 mx-auto mb-6 ${config.colorClass.split(' ')[0]}`} />
                     <h2 className={`text-6xl font-bold mb-3 ${config.colorClass.split(' ')[0]}`}>{config.text}</h2>
@@ -98,16 +116,38 @@ export default function VerdictDashboard({ result }: VerdictDashboardProps) {
                     )}
 
                     {unshortenedUrl && (
-                        <div className="mt-6 p-4 bg-black/30 rounded-xl inline-block max-w-full">
-                            <p className="text-sm text-gray-400 mb-1">{t('fullUrl')}</p>
-                            <p className="text-lg text-white break-all font-mono" dir="ltr">
-                                {unshortenedUrl}
-                            </p>
+                        <div className="mt-6 p-4 bg-black/30 rounded-xl flex items-center gap-4 max-w-full overflow-hidden mx-auto justify-between border border-gray-800">
+                            <div className="text-right flex-1 min-w-0">
+                                <p className="text-sm text-gray-400 mb-1">{t('fullUrl')}</p>
+                                <p className="text-lg text-white break-all font-mono" dir="ltr">
+                                    {unshortenedUrl}
+                                </p>
+                            </div>
+                            <button
+                                onClick={() => {
+                                    navigator.clipboard.writeText(unshortenedUrl);
+                                    setCopied(true);
+                                    setTimeout(() => setCopied(false), 2000);
+                                }}
+                                className={`p-3 rounded-lg transition-colors shrink-0 ${copied ? 'bg-cyber-safe/20 text-cyber-safe' : 'bg-cyber-navy/50 hover:bg-cyber-safe/20 hover:text-cyber-safe'}`}
+                                title={copied ? t('copiedUrl') : t('copyUrl')}
+                            >
+                                {copied ? <Check className="w-5 h-5" /> : <Copy className="w-5 h-5" />}
+                            </button>
                         </div>
                     )}
 
                     {/* Action Buttons */}
                     <div className="flex flex-wrap justify-center gap-4 mt-8">
+                        <a
+                            href={unshortenedUrl || '#'}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className="flex items-center gap-2 px-6 py-3 bg-cyber-safe hover:bg-emerald-500 text-cyber-dark rounded-xl transition-all font-bold shadow-lg hover:shadow-cyber-safe/30"
+                        >
+                            <ExternalLink className="w-5 h-5" />
+                            {t('goToUrl')}
+                        </a>
                         <a
                             href={`https://www.browserling.com/browse/win/7/ie/11/${encodeURIComponent(unshortenedUrl || '')}`}
                             target="_blank"
@@ -138,25 +178,39 @@ export default function VerdictDashboard({ result }: VerdictDashboardProps) {
                         {t('securityGauge')}
                     </h3>
 
-                    <div className="space-y-4">
-                        {/* Threat meter */}
-                        <div className="text-center mb-6">
-                            <div className="text-5xl font-bold mb-2">
-                                <span style={{ color: config.bgColor }}>{threatCount}</span>
-                                <span className="text-gray-500">/{totalVendors}</span>
+                    <div className="flex flex-col items-center justify-center pt-4">
+                        {/* SVG Donut Chart */}
+                        <div className="relative w-48 h-48 mb-6">
+                            <svg viewBox="0 0 36 36" className="w-full h-full transform -rotate-90">
+                                {/* Background Circle */}
+                                <circle
+                                    cx="18" cy="18" r="15.915"
+                                    fill="transparent"
+                                    stroke="#1f2937"
+                                    strokeWidth="3.5"
+                                />
+                                {/* Value Circle */}
+                                <motion.circle
+                                    cx="18" cy="18" r="15.915"
+                                    fill="transparent"
+                                    stroke={config.bgColor}
+                                    strokeWidth="3.5"
+                                    strokeDasharray={totalVendors > 0 ? "0 100" : "100 0"}
+                                    animate={{ strokeDasharray: totalVendors > 0 ? `${(harmlessCount / totalVendors) * 100} ${100 - ((harmlessCount / totalVendors) * 100)}` : "100 0" }}
+                                    transition={{ duration: 1.5, ease: "easeOut" }}
+                                    strokeLinecap="round"
+                                />
+                            </svg>
+                            <div className="absolute inset-0 flex flex-col items-center justify-center text-center">
+                                <span className="text-5xl font-bold font-mono" style={{ color: config.bgColor }}>{threatCount}</span>
+                                <span className="text-gray-500 font-bold border-t border-gray-700 mt-1 pt-1 min-w-[3rem]">/ {totalVendors}</span>
                             </div>
-                            <p className="text-gray-400">{t('threatMeter')}</p>
                         </div>
 
-                        {/* Stats breakdown */}
-                        {vtStats && (
-                            <div className="space-y-3">
-                                <StatBar label={t('statDangerous')} count={vtStats.malicious} color="#ff0055" />
-                                <StatBar label={t('statSuspicious')} count={vtStats.suspicious} color="#ffaa00" />
-                                <StatBar label={t('statSafe')} count={vtStats.harmless} color="#00ff88" />
-                                <StatBar label={t('statUndetected')} count={vtStats.undetected} color="#6b7280" />
-                            </div>
-                        )}
+                        <h4 className="text-gray-200 text-lg font-bold mb-2 text-center">{t('threatMeter')}</h4>
+                        <p className="text-gray-500 text-center max-w-sm text-sm leading-relaxed">
+                            {t('vendorsFlagged').replace('{threats}', threatCount.toString()).replace('{total}', totalVendors.toString())}
+                        </p>
                     </div>
                 </div>
 
@@ -209,6 +263,17 @@ export default function VerdictDashboard({ result }: VerdictDashboardProps) {
                             )}
                             {networkInfo?.server && (
                                 <InfoRow icon={Server} label={t('server')} value={networkInfo.server} />
+                            )}
+
+                            {/* Real-time timestamp */}
+                            {currentTime && (
+                                <div className="flex items-center gap-4 p-4 bg-cyber-navy/50 rounded-xl mt-4 border border-cyber-safe/10">
+                                    <Clock className="w-6 h-6 text-cyber-safe" />
+                                    <div className="flex-1 text-right">
+                                        <p className="text-sm text-gray-400">{t('scanDateTime')}</p>
+                                        <p className="text-white font-mono mt-1" dir="ltr">{currentTime}</p>
+                                    </div>
+                                </div>
                             )}
                         </div>
 
