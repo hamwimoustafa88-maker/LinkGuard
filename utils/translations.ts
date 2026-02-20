@@ -7,7 +7,7 @@ export const translations = {
         appTitle: 'LinkGuard',
         appSubtitle: 'كاشف الروابط الخبيثة',
         appDescription: 'حماية متقدمة ضد الروابط المشبوهة والبرمجيات الخبيثة',
-        
+
         // Home
         scanPlaceholder: 'ضع الرابط هنا لفحصه...',
         scanButton: 'افحص الآن',
@@ -34,20 +34,20 @@ export const translations = {
         verdictDangerSub: 'رابط خطير - لا تقم بزيارته',
         verdictUnknown: 'غير معروف',
         verdictUnknownSub: 'لم يتم التحقق من الرابط',
-        
+
         noRecords: '⚠️ لم يتم العثور على سجلات سابقة لهذا الرابط (0/0)',
         noRecordsSub: 'هذا لا يعني أنه آمن بالضرورة، بل قد يكون جديداً جداً.',
         fullUrl: 'الرابط الكامل:',
         openBrowserling: 'فتح في Browserling (بيئة آمنة)',
-        
+
         securityGauge: 'نتائج الفحص الأمني',
         threatMeter: 'مزود أمني اكتشف تهديدات',
-        
+
         statDangerous: 'خطير',
         statSuspicious: 'مشبوه',
         statSafe: 'آمن',
         statUndetected: 'غير مكتشف',
-        
+
         threatIntel: 'استخبارات التهديدات',
         urlServerInfo: 'معلومات الرابط والخادم',
         pageTitle: 'عنوان الصفحة:',
@@ -64,7 +64,7 @@ export const translations = {
         stepVirusScan: 'فحص الفيروسات',
         stepAnalyze: 'تحليل المحتوى',
         stepResult: 'النتيجة النهائية',
-        
+
         // Phishing Alert
         phishingTitle: '⚠️ تحذير: انتحال هوية علامة تجارية',
         phishingSubtitle: 'هذا الموقع يحاول انتحال شخصية',
@@ -78,7 +78,7 @@ export const translations = {
         severityMedium: 'متوسط',
         severityLow: 'منخفض',
         phishingWarning: '🚨 لا تقم بإدخال أي معلومات شخصية أو بيانات حساسة في هذا الموقع!',
-        
+
         // Education
         tipsTitle: 'نصائح الأمان السيبراني',
         tipsSubtitle: 'احمِ نفسك من التهديدات الإلكترونية',
@@ -90,10 +90,10 @@ export const translations = {
         tip3Desc: 'تأكد أن الموقع يستخدم بروتوكول HTTPS الآمن',
         tip4Title: 'احذر من التصيد الاحتيالي',
         tip4Desc: 'لا تدخل معلوماتك الشخصية على مواقع مشبوهة',
-        
+
         aboutDev: 'عن المطور',
         checkServices: 'فحص الخدمات',
-        
+
         // Developer Modal
         devName: 'مصطفى الحموي',
         devTitle: 'Software Developer | International Training Leader in Scouting',
@@ -101,6 +101,7 @@ export const translations = {
 
         // New Features
         threatsDetected: 'تهديدات تم كشفها اليوم',
+        poweredByAI: 'مدعوم بالذكاء الاصطناعي',
         shareWhatsApp: 'مشاركة النتيجة عبر واتساب',
         shareTextSafe: '✅ هذا الرابط آمن بنسبة {score}% وفقاً لفحص LinkGuard',
         shareTextDanger: '⛔️ تحذير! هذا الرابط خطير! تم الكشف عنه بواسطة LinkGuard',
@@ -110,7 +111,7 @@ export const translations = {
         appTitle: 'LinkGuard',
         appSubtitle: 'Malicious Link Detector',
         appDescription: 'Advanced protection against suspicious links and malware',
-        
+
         // Home
         scanPlaceholder: 'Paste link here to scan...',
         scanButton: 'Scan Now',
@@ -137,20 +138,20 @@ export const translations = {
         verdictDangerSub: 'Dangerous link - do not visit',
         verdictUnknown: 'Unknown',
         verdictUnknownSub: 'Link not verified',
-        
+
         noRecords: '⚠️ No previous records found for this link (0/0)',
         noRecordsSub: 'This does not necessarily mean it is safe; it could be very new.',
         fullUrl: 'Full URL:',
         openBrowserling: 'Open in Browserling (Safe Env)',
-        
+
         securityGauge: 'Security Scan Results',
         threatMeter: 'Security vendors flagged this',
-        
+
         statDangerous: 'Dangerous',
         statSuspicious: 'Suspicious',
         statSafe: 'Safe',
         statUndetected: 'Undetected',
-        
+
         threatIntel: 'Threat Intelligence',
         urlServerInfo: 'URL & Server Info',
         pageTitle: 'Page Title:',
@@ -167,7 +168,7 @@ export const translations = {
         stepVirusScan: 'Virus Scan',
         stepAnalyze: 'Content Analysis',
         stepResult: 'Final Verdict',
-        
+
         // Phishing Alert
         phishingTitle: '⚠️ Warning: Brand Impersonation',
         phishingSubtitle: 'This site is attempting to impersonate',
@@ -181,7 +182,7 @@ export const translations = {
         severityMedium: 'Medium',
         severityLow: 'Low',
         phishingWarning: '🚨 Do not enter any personal information or sensitive data on this site!',
-        
+
         // Education
         tipsTitle: 'Cybersecurity Tips',
         tipsSubtitle: 'Protect yourself from cyber threats',
@@ -193,10 +194,10 @@ export const translations = {
         tip3Desc: 'Ensure the site uses the secure HTTPS protocol',
         tip4Title: 'Beware of Phishing',
         tip4Desc: 'Do not enter personal information on suspicious sites',
-        
+
         aboutDev: 'About Developer',
         checkServices: 'Check Services',
-        
+
         // Developer Modal
         devName: 'Moustafa Hamwi',
         devTitle: 'Software Developer | International Training Leader in Scouting',
@@ -204,6 +205,7 @@ export const translations = {
 
         // New Features
         threatsDetected: 'Threats Detected Today',
+        poweredByAI: 'Powered by AI',
         shareWhatsApp: 'Share Result on WhatsApp',
         shareTextSafe: '✅ This link is {score}% Safe according to LinkGuard scan',
         shareTextDanger: '⛔️ Warning! This link is dangerous! Detected by LinkGuard',

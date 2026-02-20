@@ -2,6 +2,7 @@
 
 import { useState, useEffect, Suspense } from 'react';
 import { useSearchParams } from 'next/navigation';
+import { Sparkles, ShieldCheck } from 'lucide-react';
 import HeroSection from '@/components/HeroSection';
 import StatusTerminal from '@/components/StatusTerminal';
 import VerdictDashboard from '@/components/VerdictDashboard';
@@ -136,12 +137,12 @@ function HomeContent() {
     };
 
     return (
-        <main className="min-h-screen relative overflow-hidden">
+        <main className="min-h-screen relative overflow-hidden flex flex-col">
             {/* Background effects */}
             <div className="fixed inset-0 bg-gradient-to-br from-cyber-dark via-cyber-navy to-cyber-dark" />
             <div className="fixed inset-0 bg-[radial-gradient(ellipse_at_top,_var(--tw-gradient-stops))] from-cyan-900/20 via-transparent to-transparent" />
 
-            <div className="relative z-10 container mx-auto px-4 py-8">
+            <div className="relative z-10 container mx-auto px-4 py-8 flex-1 flex flex-col">
                 {/* Navbar / Top Bar */}
                 <div className="flex flex-col md:flex-row justify-between items-center mb-8 gap-4">
                     <ThreatCounter />
@@ -149,10 +150,17 @@ function HomeContent() {
                 </div>
 
                 {/* Header */}
-                <header className="text-center mb-16 mt-4">
-                    <h1 className="text-6xl font-bold mb-4 bg-gradient-to-r from-cyber-safe to-cyber-glow bg-clip-text text-transparent">
-                        {t('appTitle')}
-                    </h1>
+                <header className="text-center mb-16 mt-4 flex flex-col items-center">
+                    <div className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-cyber-safe/10 border border-cyber-safe/30 text-cyber-safe text-sm font-medium mb-6">
+                        <Sparkles className="w-4 h-4" />
+                        <span>{t('poweredByAI')}</span>
+                    </div>
+                    <div className="flex items-center justify-center gap-4 mb-4">
+                        <ShieldCheck className="w-14 h-14 text-cyber-safe" />
+                        <h1 className="text-6xl font-bold bg-gradient-to-r from-cyber-safe to-cyber-glow bg-clip-text text-transparent">
+                            {t('appTitle')}
+                        </h1>
+                    </div>
                     <p className="text-2xl text-cyber-glow font-tajawal">{t('appSubtitle')}</p>
                     <p className="text-gray-400 mt-2">{t('appDescription')}</p>
                 </header>
@@ -180,15 +188,18 @@ function HomeContent() {
                 {/* Education Footer */}
                 <EducationFooter />
 
-                {/* Disclaimer */}
-                <footer className="mt-12 text-center pb-8 border-t border-gray-800 pt-8">
-                    <div className="bg-red-900/10 border border-red-500/20 rounded-lg p-4 inline-block max-w-2xl mx-auto">
+                {/* Disclaimer and Footer */}
+                <footer className="mt-auto text-center pb-8 border-t border-gray-800 pt-8">
+                    <div className="bg-red-900/10 border border-red-500/20 rounded-lg p-4 inline-block max-w-2xl mx-auto mb-8">
                         <p className="text-red-400 font-bold text-lg mb-1">
                             {t('disclaimerTitle')}
                         </p>
                         <p className="text-gray-400 text-sm">
                             {t('disclaimerText')}
                         </p>
+                    </div>
+                    <div className="text-gray-500 text-sm mt-4">
+                        <p>{t('footerCopy')}</p>
                     </div>
                 </footer>
             </div>

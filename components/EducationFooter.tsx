@@ -45,13 +45,13 @@ export default function EducationFooter() {
                 {tips.map((tip, index) => {
                     const Icon = tip.icon;
                     return (
-                        <motion.div
+                        <motion.article
                             key={index}
                             initial={{ opacity: 0, y: 20 }}
                             whileInView={{ opacity: 1, y: 0 }}
                             viewport={{ once: true }}
                             transition={{ delay: index * 0.1 }}
-                            whileHover={{ y: -5 }}
+                            whileHover={{ y: -8, boxShadow: '0 10px 30px -10px rgba(0, 255, 136, 0.3)' }}
                             className="glass-effect rounded-2xl p-6 border border-cyber-safe/20 hover:border-cyber-safe/50 transition-all duration-300"
                         >
                             <div className="bg-gradient-to-br from-cyber-safe/20 to-cyber-glow/20 w-16 h-16 rounded-xl flex items-center justify-center mb-4">
@@ -59,7 +59,7 @@ export default function EducationFooter() {
                             </div>
                             <h3 className="text-xl font-bold mb-2 text-white">{tip.title}</h3>
                             <p className="text-gray-400 text-sm leading-relaxed">{tip.description}</p>
-                        </motion.div>
+                        </motion.article>
                     );
                 })}
             </div>
@@ -83,10 +83,7 @@ export default function EducationFooter() {
                 </Link>
             </div>
 
-            {/* Footer */}
-            <div className="text-center mt-8 text-gray-500 text-sm">
-                <p>{t('footerCopy')}</p>
-            </div>
+            {/* Developer and Status Buttons (Footer removed to page.tsx) */}
 
             {/* Developer Modal */}
             <AnimatePresence>

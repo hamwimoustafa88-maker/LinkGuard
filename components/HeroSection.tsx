@@ -43,7 +43,7 @@ export default function HeroSection({ onScan, isScanning }: HeroSectionProps) {
                 <div className="flex gap-3">
                     {/* Glowing input field */}
                     <div className="relative group flex-1">
-                        <div className="absolute -inset-1 bg-gradient-to-r from-cyber-safe to-cyber-glow rounded-2xl blur opacity-25 group-hover:opacity-50 transition duration-1000" />
+                        <div className="absolute -inset-1 bg-gradient-to-r from-cyber-safe to-cyber-glow rounded-2xl blur opacity-25 group-hover:opacity-50 group-focus-within:opacity-100 group-focus-within:duration-300 transition duration-1000" />
                         <div className="relative">
                             <input
                                 type="text"
@@ -51,7 +51,7 @@ export default function HeroSection({ onScan, isScanning }: HeroSectionProps) {
                                 onChange={(e) => setUrl(e.target.value)}
                                 placeholder={t('scanPlaceholder')}
                                 disabled={isScanning}
-                                className="w-full px-8 py-6 text-xl bg-cyber-navy/90 backdrop-blur-sm border-2 border-cyber-safe/30 rounded-2xl text-white placeholder-gray-400 focus:outline-none focus:border-cyber-safe transition-all duration-300 disabled:opacity-50"
+                                className="w-full px-8 py-6 text-xl bg-cyber-navy/90 backdrop-blur-sm border-2 border-cyber-safe/30 rounded-2xl text-white placeholder-gray-400 focus:outline-none focus:border-cyber-safe focus:shadow-[0_0_15px_rgba(0,255,136,0.3)] transition-all duration-300 disabled:opacity-50"
                                 dir="ltr"
                             />
                             <Search className="absolute left-6 top-1/2 -translate-y-1/2 text-cyber-safe/50 w-6 h-6 rtl:left-6 rtl:right-auto ltr:right-6 ltr:left-auto" />
@@ -92,7 +92,7 @@ export default function HeroSection({ onScan, isScanning }: HeroSectionProps) {
                     disabled={isScanning || !url.trim()}
                     whileHover={{ scale: 1.02 }}
                     whileTap={{ scale: 0.98 }}
-                    className="w-full mt-6 px-8 py-5 text-2xl font-bold bg-gradient-to-r from-cyber-safe to-emerald-400 text-cyber-dark rounded-2xl disabled:opacity-50 disabled:cursor-not-allowed relative overflow-hidden group"
+                    className="w-full mt-6 px-8 py-5 text-2xl font-bold bg-gradient-to-r from-cyber-safe to-emerald-400 text-cyber-dark rounded-2xl disabled:opacity-50 disabled:cursor-not-allowed relative overflow-hidden group hover:from-emerald-400 hover:to-cyber-safe hover:shadow-[0_0_30px_rgba(0,255,136,0.5)] transition-all duration-300"
                 >
                     <span className="relative z-10 flex items-center justify-center gap-3">
                         <Shield className="w-7 h-7" />
@@ -124,7 +124,7 @@ export default function HeroSection({ onScan, isScanning }: HeroSectionProps) {
             />
 
             {/* Info text */}
-            <p className="text-center text-gray-400 mt-6 text-sm">
+            <p className="text-center text-gray-300 mt-6 text-base font-medium">
                 {t('scanInfo')}
             </p>
         </motion.section>

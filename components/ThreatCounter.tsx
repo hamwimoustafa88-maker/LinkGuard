@@ -7,17 +7,37 @@ import { useLanguage } from './LanguageContext';
 
 export default function ThreatCounter() {
     const { t } = useLanguage();
-    // Start at 1,357
-    const [count, setCount] = useState(1357);
+    // Start at 0 for animation, then target 1357
+    const targetCount = 1357;
+    const [count, setCount] = useState(0);
 
     useEffect(() => {
+        // Rapid counting up animation on mount
+        let startTimestamp: number | null = null;
+        const duration = 1500; // 1.5 seconds
+
+        const animateCount = (timestamp: number) => {
+            if (!startTimestamp) startTimestamp = timestamp;
+            const progress = Math.min((timestamp - startTimestamp) / duration, 1);
+            // ease-out curve
+            const easeOutProgress = 1 - Math.pow(1 - progress, 3);
+
+            setCount(Math.floor(easeOutProgress * targetCount));
+
+            if (progress < 1) {
+                window.requestAnimationFrame(animateCount);
+            }
+        };
+
+        window.requestAnimationFrame(animateCount);
+
         // Increment every 3 minutes (180,000 ms)
         const interval = setInterval(() => {
             setCount(prev => prev + 1);
         }, 3 * 60 * 1000);
 
         return () => clearInterval(interval);
-    }, []);
+    }, [targetCount]);
 
     // Also a little fake "live" feel on mount maybe? No, stick to requirements: +1 every 3 mins.
 
