@@ -40,9 +40,9 @@ export default function HeroSection({ onScan, isScanning, isCompact = false }: H
             className={`max-w-4xl mx-auto ${isCompact ? 'mb-8' : 'mb-16'}`}
         >
             <form onSubmit={handleSubmit} className="relative">
-                <div className={`flex gap-3 ${isCompact ? 'flex-col sm:flex-row items-center' : 'flex-col sm:flex-row'}`}>
+                <div className={isCompact ? 'flex flex-col sm:flex-row items-center gap-3' : ''}>
                     {/* Input field with QR button wrapper */}
-                    <div className={`flex gap-3 flex-1 ${isCompact ? 'w-full' : 'w-full'}`}>
+                    <div className={`flex gap-3 ${isCompact ? 'flex-1 w-full' : ''}`}>
                         {/* Glowing input field */}
                         <div className="relative group flex-1">
                             <div className={`absolute -inset-1 bg-gradient-to-r from-cyber-safe to-cyber-glow rounded-2xl blur opacity-25 group-hover:opacity-50 group-focus-within:opacity-100 group-focus-within:duration-300 transition duration-1000 ${isCompact ? 'opacity-20' : ''}`} />
