@@ -185,8 +185,7 @@ export default function StatusPage() {
                         <div className="mt-8 p-6 rounded-xl bg-cyber-navy/20 border border-gray-700">
                             <h3 className="text-lg font-bold mb-2 text-gray-200">ملخص التقرير</h3>
                             <p className="text-gray-400 text-sm leading-relaxed">
-                                يتم اختبار الاتصال المباشر بمفاتيح API المخزنة في النظام. إذا ظهرت أي خدمة باللون الأحمر، يرجى التحقق من ملف <code>.env.local</code> وصلاحية المفاتيح.
-                            </p>
+                                يتم اختبار الاتصال المباشر بمفاتيح API المخزنة في النظام. إذا ظهرت أي خدمة باللون الأحمر، يرجى التحقق                             </p>
                         </div>
                     )}
                 </div>
