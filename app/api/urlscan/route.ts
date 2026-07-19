@@ -10,7 +10,7 @@ export async function POST(request: NextRequest) {
             return NextResponse.json({ success: false, error: 'عنوان URL مطلوب' }, { status: 400 });
         }
 
-        const apiKey = process.env.URLSCAN_API_KEY;
+        const apiKey = (process.env.URLSCAN_API_KEY || '').replace(/\s+/g, '');
         if (!apiKey) {
             return NextResponse.json({ success: true, status: 'skipped', screenshotUrl: null });
         }

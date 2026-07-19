@@ -9,8 +9,13 @@ interface SubResult {
     detail?: string;
 }
 
+// يزيل أي مسافات/أسطر جديدة من المفتاح — قيم الأسطر الجديدة غير مسموحة في HTTP headers
+function cleanKey(value: string | undefined): string {
+    return (value || '').replace(/\s+/g, '');
+}
+
 async function checkUrlhaus(url: string): Promise<SubResult> {
-    const authKey = process.env.URLHAUS_AUTH_KEY;
+    const authKey = cleanKey(process.env.URLHAUS_AUTH_KEY);
     if (!authKey) return { status: 'skipped', listed: false };
 
     try {
@@ -40,7 +45,7 @@ async function checkUrlhaus(url: string): Promise<SubResult> {
 }
 
 async function checkPhishtank(url: string): Promise<SubResult> {
-    const appKey = process.env.PHISHTANK_APP_KEY;
+    const appKey = cleanKey(process.env.PHISHTANK_APP_KEY);
     try {
         const form = new URLSearchParams();
         form.append('url', Buffer.from(url).toString('base64'));
@@ -67,7 +72,7 @@ async function checkPhishtank(url: string): Promise<SubResult> {
 }
 
 async function checkAbuseIpdb(ip: string): Promise<SubResult & { score?: number }> {
-    const apiKey = process.env.ABUSEIPDB_API_KEY;
+    const apiKey = cleanKey(process.env.ABUSEIPDB_API_KEY);
     if (!apiKey) return { status: 'skipped', listed: false };
 
     try {

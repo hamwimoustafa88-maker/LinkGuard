@@ -17,7 +17,7 @@ export async function POST(request: NextRequest) {
             return NextResponse.json(cached);
         }
 
-        const apiKey = process.env.VIRUSTOTAL_API_KEY;
+        const apiKey = (process.env.VIRUSTOTAL_API_KEY || '').replace(/\s+/g, '');
         if (!apiKey) {
             return NextResponse.json({ success: true, status: 'skipped' });
         }

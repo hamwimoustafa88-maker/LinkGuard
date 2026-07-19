@@ -6,6 +6,11 @@ interface ServiceStatus {
     message: string;
 }
 
+// يزيل أي مسافات/أسطر جديدة من المفتاح — قيم الأسطر الجديدة غير مسموحة في HTTP headers
+function cleanKey(value: string | undefined): string {
+    return (value || '').replace(/\s+/g, '');
+}
+
 async function checkKeyedService(
     keyEnvVar: string,
     check: () => Promise<{ ok: boolean; message: string }>
@@ -28,14 +33,14 @@ export async function GET() {
     const [virustotal, urlscan, safebrowsing, urlhaus, abuseipdb] = await Promise.all([
         checkKeyedService('VIRUSTOTAL_API_KEY', async () => {
             const res = await fetch('https://www.virustotal.com/api/v3/ip_addresses/8.8.8.8', {
-                headers: { 'x-apikey': process.env.VIRUSTOTAL_API_KEY || '' },
+                headers: { 'x-apikey': cleanKey(process.env.VIRUSTOTAL_API_KEY) },
                 signal: AbortSignal.timeout(8000),
             });
             return { ok: res.ok, message: res.ok ? 'متصل' : `خطأ: ${res.status}` };
         }),
         checkKeyedService('URLSCAN_API_KEY', async () => {
             const res = await fetch('https://urlscan.io/user/quotas/', {
-                headers: { 'API-Key': process.env.URLSCAN_API_KEY || '' },
+                headers: { 'API-Key': cleanKey(process.env.URLSCAN_API_KEY) },
                 signal: AbortSignal.timeout(8000),
             });
             return { ok: res.ok, message: res.ok ? 'متصل' : `خطأ: ${res.status}` };
@@ -65,7 +70,7 @@ export async function GET() {
             form.append('url', 'https://example.com');
             const res = await fetch('https://urlhaus-api.abuse.ch/v1/url/', {
                 method: 'POST',
-                headers: { 'Auth-Key': process.env.URLHAUS_AUTH_KEY || '', 'Content-Type': 'application/x-www-form-urlencoded' },
+                headers: { 'Auth-Key': cleanKey(process.env.URLHAUS_AUTH_KEY), 'Content-Type': 'application/x-www-form-urlencoded' },
                 body: form,
                 signal: AbortSignal.timeout(8000),
             });
@@ -73,7 +78,7 @@ export async function GET() {
         }),
         checkKeyedService('ABUSEIPDB_API_KEY', async () => {
             const res = await fetch('https://api.abuseipdb.com/api/v2/check?ipAddress=8.8.8.8', {
-                headers: { Key: process.env.ABUSEIPDB_API_KEY || '', Accept: 'application/json' },
+                headers: { Key: cleanKey(process.env.ABUSEIPDB_API_KEY), Accept: 'application/json' },
                 signal: AbortSignal.timeout(8000),
             });
             return { ok: res.ok, message: res.ok ? 'متصل' : `خطأ: ${res.status}` };
