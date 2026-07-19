@@ -1,22 +1,25 @@
 import { NextRequest, NextResponse } from 'next/server';
+import { cacheGet, cacheSet, cacheKey } from '@/lib/server/cache';
+
+export const maxDuration = 60;
 
 export async function POST(request: NextRequest) {
     try {
         const { url } = await request.json();
 
         if (!url) {
-            return NextResponse.json(
-                { success: false, error: 'عنوان URL مطلوب' },
-                { status: 400 }
-            );
+            return NextResponse.json({ success: false, error: 'عنوان URL مطلوب' }, { status: 400 });
+        }
+
+        const key = cacheKey('virustotal', url);
+        const cached = cacheGet<Record<string, unknown>>(key);
+        if (cached) {
+            return NextResponse.json(cached);
         }
 
         const apiKey = process.env.VIRUSTOTAL_API_KEY;
         if (!apiKey) {
-            return NextResponse.json(
-                { success: false, error: 'خطأ في إعدادات الخادم' },
-                { status: 500 }
-            );
+            return NextResponse.json({ success: true, status: 'skipped' });
         }
 
         // Step 1: Submit URL for scanning
@@ -33,73 +36,59 @@ export async function POST(request: NextRequest) {
 
         if (!submitResponse.ok) {
             if (submitResponse.status === 429) {
-                return NextResponse.json(
-                    { success: false, error: 'خدمة الفحص مشغولة، حاول مرة أخرى' },
-                    { status: 429 }
-                );
+                return NextResponse.json({ success: true, status: 'error', reason: 'rate_limited' });
             }
-            throw new Error('فشل إرسال URL للفحص');
+            return NextResponse.json({ success: true, status: 'error', reason: 'submit_failed' });
         }
 
         const submitData = await submitResponse.json();
         const analysisId = submitData.data.id;
 
-        // Step 2: Strict Polling (Wait until completion or very long timeout)
+        // Step 2: Poll for completion with a bounded, soft timeout — a timeout no
+        // longer fails the whole scan, it just means this source contributes nothing.
         let stats = { malicious: 0, suspicious: 0, harmless: 0, undetected: 0 };
-        let details = {};
-        let votes = {};
+        let details: any = {};
         let isCompleted = false;
         let attempts = 0;
-        const maxAttempts = 30; // 30 * 2s = 60s max (Increased for strictness)
-        let finalScanId = analysisId; // Default to analysis ID
+        const maxAttempts = 12; // 12 * 2s = 24s max
+        let finalScanId = analysisId;
 
-        // Strict loop: We MUST get a result.
         while (attempts < maxAttempts && !isCompleted) {
             attempts++;
-            // Wait 2 seconds between checks
             await new Promise(resolve => setTimeout(resolve, 2000));
 
             const analysisResponse = await fetch(
                 `https://www.virustotal.com/api/v3/analyses/${analysisId}`,
-                {
-                    headers: {
-                        'x-apikey': apiKey,
-                    },
-                }
+                { headers: { 'x-apikey': apiKey } }
             );
 
             if (!analysisResponse.ok) {
-                console.error('VT polling error:', analysisResponse.status);
                 continue;
             }
 
             const analysisData = await analysisResponse.json();
             const attributes = analysisData.data.attributes;
-            const status = attributes.status;
 
-            if (status === 'completed') {
+            if (attributes.status === 'completed') {
                 stats = attributes.stats;
-                details = attributes.results; // Detailed scan results per engine
+                details = attributes.results;
                 if (analysisData.meta?.url_info?.id) {
                     finalScanId = analysisData.meta.url_info.id;
 
-                    // Fetch full URL object for metadata (Title, Tags, Rep)
                     try {
                         const urlResponse = await fetch(`https://www.virustotal.com/api/v3/urls/${finalScanId}`, {
-                            headers: { 'x-apikey': apiKey }
+                            headers: { 'x-apikey': apiKey },
                         });
                         if (urlResponse.ok) {
                             const urlData = await urlResponse.json();
                             const attr = urlData.data.attributes;
 
-                            // Extract useful meta
                             details = {
                                 ...details,
-                                ...attr.last_analysis_results // Merge if needed or keep separate
+                                ...attr.last_analysis_results,
                             };
 
-                            // We will send this as a separate meta object
-                            (details as any).meta = {
+                            details.meta = {
                                 title: attr.title,
                                 tags: attr.tags,
                                 categories: attr.categories,
@@ -110,42 +99,37 @@ export async function POST(request: NextRequest) {
                                 total_votes: attr.total_votes,
                             };
                         }
-                    } catch (e) {
-                        console.error('Failed to fetch URL meta:', e);
+                    } catch {
+                        // metadata is a nice-to-have; ignore failures
                     }
                 }
 
                 isCompleted = true;
-            } else {
-                console.log(`Scan status: ${status}, waiting... (${attempts}/${maxAttempts})`);
             }
         }
 
         if (!isCompleted) {
-            // Strict requirement: Do NOT return result unless checked.
-            return NextResponse.json(
-                { success: false, error: 'انتهت مهلة الفحص قبل الحصول على نتائج مؤكدة. يرجى المحاولة مرة أخرى.' },
-                { status: 408 }
-            );
+            return NextResponse.json({ success: true, status: 'error', reason: 'timeout' });
         }
 
-        return NextResponse.json({
+        const result = {
             success: true,
+            status: 'ok',
             stats: {
                 malicious: stats.malicious || 0,
                 suspicious: stats.suspicious || 0,
                 harmless: stats.harmless || 0,
                 undetected: stats.undetected || 0,
             },
-            details: details, // This is the raw results map
-            vtUrlMeta: (details as any).meta, // The new rich metadata
-            scanId: finalScanId || analysisId
-        });
+            details,
+            vtUrlMeta: details.meta,
+            scanId: finalScanId || analysisId,
+        };
+
+        cacheSet(key, result);
+        return NextResponse.json(result);
     } catch (error) {
         console.error('VirusTotal error:', error);
-        return NextResponse.json(
-            { success: false, error: 'فشل فحص الرابط' },
-            { status: 500 }
-        );
+        return NextResponse.json({ success: true, status: 'error', reason: 'exception' });
     }
 }

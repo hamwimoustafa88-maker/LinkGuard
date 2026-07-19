@@ -31,6 +31,71 @@ export interface PhishingAlert {
     severity: 'low' | 'medium' | 'high';
 }
 
+// --- Evidence / scoring engine types ---
+
+export type EvidenceSource =
+    | 'virustotal'
+    | 'safebrowsing'
+    | 'urlhaus'
+    | 'phishtank'
+    | 'abuseipdb'
+    | 'heuristics'
+    | 'domainAge'
+    | 'ssl'
+    | 'redirects'
+    | 'urlscan';
+
+export type EvidenceSeverity = 'info' | 'low' | 'medium' | 'high' | 'critical';
+
+export interface EvidenceItem {
+    id: string;
+    source: EvidenceSource;
+    severity: EvidenceSeverity;
+    points: number;
+    authoritative?: boolean;
+    params?: Record<string, string | number>;
+}
+
+export type SourceStatus = 'ok' | 'skipped' | 'error';
+
+export interface SourceOutcome {
+    source: string;
+    status: SourceStatus;
+}
+
+export type ConfidenceLevel = 'low' | 'medium' | 'high';
+
+export interface AggregatedVerdict {
+    score: number;
+    verdict: VerdictType;
+    confidence: ConfidenceLevel;
+    evidence: EvidenceItem[];
+    sources: SourceOutcome[];
+}
+
+// --- Redirect / domain intelligence types ---
+
+export interface RedirectHop {
+    url: string;
+    status: number | null;
+}
+
+export interface DomainInfo {
+    ageDays?: number;
+    createdAt?: string;
+    registrar?: string;
+}
+
+export interface SslInfo {
+    issuer?: string;
+    validFrom?: string;
+    validTo?: string;
+    daysUntilExpiry?: number;
+    selfSigned?: boolean;
+    hostnameMatch?: boolean;
+    valid: boolean;
+}
+
 export interface ScanResult {
     status: ScanStatus;
     originalUrl?: string;
@@ -71,4 +136,8 @@ export interface ScanResult {
     };
     scanId?: string;
     error?: string;
+    riskScore?: AggregatedVerdict;
+    redirectChain?: RedirectHop[];
+    domainInfo?: DomainInfo;
+    sslInfo?: SslInfo;
 }

@@ -69,3 +69,38 @@
     text-shadow: 0 0 5px var(--cyber-safe);
   }
 }
+
+@media print {
+  body {
+    background: white !important;
+    color: black !important;
+  }
+
+  nav,
+  footer,
+  button,
+  .neon-glow-safe,
+  .neon-glow-danger,
+  .neon-glow-warning {
+    box-shadow: none !important;
+  }
+
+  button {
+    display: none !important;
+  }
+
+  .glass-effect {
+    background: white !important;
+    backdrop-filter: none !important;
+    border: 1px solid #ccc !important;
+    color: black !important;
+  }
+
+  .glass-effect * {
+    color: black !important;
+  }
+
+  .fixed {
+    display: none !important;
+  }
+}

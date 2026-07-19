@@ -1,73 +1,84 @@
 import { NextResponse } from 'next/server';
 
-export async function GET() {
-    const results = {
-        virustotal: { status: 'unknown', latency: 0, message: '' },
-        urlscan: { status: 'unknown', latency: 0, message: '' },
-        unshorten: { status: 'unknown', latency: 0, message: '' },
-    };
+interface ServiceStatus {
+    status: 'online' | 'offline' | 'error' | 'no_key';
+    latency: number;
+    message: string;
+}
 
-    // 1. Check VirusTotal
-    if (!process.env.VIRUSTOTAL_API_KEY) {
-        results.virustotal = { status: 'error', latency: 0, message: 'مفتاح API مفقود' };
-    } else {
-        const start = Date.now();
-        try {
-            // Check a known safe IP or domain to test API
-            const res = await fetch('https://www.virustotal.com/api/v3/ip_addresses/8.8.8.8', {
-                headers: { 'x-apikey': process.env.VIRUSTOTAL_API_KEY || '' }
-            });
-            const latency = Date.now() - start;
-            if (res.ok) {
-                results.virustotal = { status: 'online', latency, message: 'متصل' };
-            } else {
-                results.virustotal = { status: 'error', latency, message: `خطأ: ${res.status}` };
-            }
-        } catch (e: any) {
-            results.virustotal = { status: 'offline', latency: 0, message: e.message };
-        }
+async function checkKeyedService(
+    keyEnvVar: string,
+    check: () => Promise<{ ok: boolean; message: string }>
+): Promise<ServiceStatus> {
+    if (!process.env[keyEnvVar]) {
+        return { status: 'no_key', latency: 0, message: 'مفتاح API غير مضبوط' };
     }
 
-    // 2. Check URLScan.io
-    if (!process.env.URLSCAN_API_KEY) {
-        results.urlscan = { status: 'error', latency: 0, message: 'مفتاح API مفقود' };
-    } else {
-        const start = Date.now();
-        try {
-            // Check quota or simple endpoint
-            const res = await fetch('https://urlscan.io/user/quotas/', {
-                headers: { 'API-Key': process.env.URLSCAN_API_KEY || '' }
-            });
-            const latency = Date.now() - start;
-            if (res.ok) {
-                results.urlscan = { status: 'online', latency, message: 'متصل' };
-            } else {
-                // If quota fail, it might be 400/403 but network is ok, but we need API to work.
-                results.urlscan = { status: 'error', latency, message: `خطأ: ${res.status}` };
-            }
-        } catch (e: any) {
-            results.urlscan = { status: 'offline', latency: 0, message: e.message };
-        }
-    }
-
-    // 3. Check Unshorten service (mock check as we use public API or library, assumed generic internet check)
-    // Actually we implemented a local unshorten or used an external API in route?
-    // Let's check the external API we use 'https://unshorten.me/api/v2/unshorten?url=...'
     const start = Date.now();
     try {
-        const res = await fetch('https://unshorten.me/api/v2/unshorten?url=https://t.ly/test', {
-            method: 'GET'
-        });
+        const { ok, message } = await check();
         const latency = Date.now() - start;
-        if (res.ok) {
-            results.unshorten = { status: 'online', latency, message: 'متصل' };
-        } else {
-            // Unshorten.me might return text directly
-            results.unshorten = { status: 'online', latency, message: 'متصل (مع تنبيه)' };
-        }
+        return { status: ok ? 'online' : 'error', latency, message };
     } catch (e: any) {
-        results.unshorten = { status: 'offline', latency: 0, message: e.message };
+        return { status: 'offline', latency: 0, message: e.message };
     }
+}
 
-    return NextResponse.json(results);
+export async function GET() {
+    const [virustotal, urlscan, safebrowsing, urlhaus, abuseipdb] = await Promise.all([
+        checkKeyedService('VIRUSTOTAL_API_KEY', async () => {
+            const res = await fetch('https://www.virustotal.com/api/v3/ip_addresses/8.8.8.8', {
+                headers: { 'x-apikey': process.env.VIRUSTOTAL_API_KEY || '' },
+                signal: AbortSignal.timeout(8000),
+            });
+            return { ok: res.ok, message: res.ok ? 'متصل' : `خطأ: ${res.status}` };
+        }),
+        checkKeyedService('URLSCAN_API_KEY', async () => {
+            const res = await fetch('https://urlscan.io/user/quotas/', {
+                headers: { 'API-Key': process.env.URLSCAN_API_KEY || '' },
+                signal: AbortSignal.timeout(8000),
+            });
+            return { ok: res.ok, message: res.ok ? 'متصل' : `خطأ: ${res.status}` };
+        }),
+        checkKeyedService('GOOGLE_SAFE_BROWSING_API_KEY', async () => {
+            const res = await fetch(
+                `https://safebrowsing.googleapis.com/v4/threatMatches:find?key=${process.env.GOOGLE_SAFE_BROWSING_API_KEY}`,
+                {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        client: { clientId: 'linkguard', clientVersion: '1.0.0' },
+                        threatInfo: {
+                            threatTypes: ['MALWARE'],
+                            platformTypes: ['ANY_PLATFORM'],
+                            threatEntryTypes: ['URL'],
+                            threatEntries: [{ url: 'https://example.com' }],
+                        },
+                    }),
+                    signal: AbortSignal.timeout(8000),
+                }
+            );
+            return { ok: res.ok, message: res.ok ? 'متصل' : `خطأ: ${res.status}` };
+        }),
+        checkKeyedService('URLHAUS_AUTH_KEY', async () => {
+            const form = new URLSearchParams();
+            form.append('url', 'https://example.com');
+            const res = await fetch('https://urlhaus-api.abuse.ch/v1/url/', {
+                method: 'POST',
+                headers: { 'Auth-Key': process.env.URLHAUS_AUTH_KEY || '', 'Content-Type': 'application/x-www-form-urlencoded' },
+                body: form,
+                signal: AbortSignal.timeout(8000),
+            });
+            return { ok: res.ok, message: res.ok ? 'متصل' : `خطأ: ${res.status}` };
+        }),
+        checkKeyedService('ABUSEIPDB_API_KEY', async () => {
+            const res = await fetch('https://api.abuseipdb.com/api/v2/check?ipAddress=8.8.8.8', {
+                headers: { Key: process.env.ABUSEIPDB_API_KEY || '', Accept: 'application/json' },
+                signal: AbortSignal.timeout(8000),
+            });
+            return { ok: res.ok, message: res.ok ? 'متصل' : `خطأ: ${res.status}` };
+        }),
+    ]);
+
+    return NextResponse.json({ virustotal, urlscan, safebrowsing, urlhaus, abuseipdb });
 }

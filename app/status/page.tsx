@@ -6,7 +6,7 @@ import { Shield, Server, Activity, ArrowRight, RefreshCw, CheckCircle, XCircle, 
 import Link from 'next/link';
 
 interface ServiceStatus {
-    status: 'online' | 'offline' | 'error' | 'unknown';
+    status: 'online' | 'offline' | 'error' | 'no_key' | 'unknown';
     latency: number;
     message: string;
 }
@@ -14,7 +14,9 @@ interface ServiceStatus {
 interface HealthData {
     virustotal: ServiceStatus;
     urlscan: ServiceStatus;
-    unshorten: ServiceStatus;
+    safebrowsing: ServiceStatus;
+    urlhaus: ServiceStatus;
+    abuseipdb: ServiceStatus;
 }
 
 export default function StatusPage() {
@@ -54,6 +56,11 @@ export default function StatusPage() {
             bg = 'bg-emerald-900/10';
             border = 'border-emerald-500/30';
             StatusIcon = CheckCircle;
+        } else if (service.status === 'no_key') {
+            color = 'text-gray-400';
+            bg = 'bg-gray-800/20';
+            border = 'border-gray-600/30';
+            StatusIcon = AlertTriangle;
         } else if (service.status === 'error') {
             color = 'text-yellow-400';
             bg = 'bg-yellow-900/10';
@@ -80,7 +87,7 @@ export default function StatusPage() {
                         <h3 className="text-xl font-bold text-gray-200">{name}</h3>
                         <div className="flex items-center gap-2 mt-1">
                             <span className={`text-sm ${color} font-bold`}>
-                                {service.status === 'online' ? 'متصل' : service.status === 'error' ? 'خطأ' : 'غير متصل'}
+                                {service.status === 'online' ? 'متصل' : service.status === 'no_key' ? 'مفتاح غير مضبوط (اختياري)' : service.status === 'error' ? 'خطأ' : 'غير متصل'}
                             </span>
                             {service.latency > 0 && (
                                 <span className="text-xs text-gray-500 font-mono">
@@ -156,8 +163,18 @@ export default function StatusPage() {
                                 icon={Server}
                             />
                             <StatusCard
-                                name="Unshorten Service"
-                                service={status.unshorten}
+                                name="Google Safe Browsing API"
+                                service={status.safebrowsing}
+                                icon={Shield}
+                            />
+                            <StatusCard
+                                name="URLhaus API"
+                                service={status.urlhaus}
+                                icon={Activity}
+                            />
+                            <StatusCard
+                                name="AbuseIPDB API"
+                                service={status.abuseipdb}
                                 icon={Activity}
                             />
                         </div>

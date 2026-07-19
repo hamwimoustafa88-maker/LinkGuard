@@ -6,6 +6,10 @@ import { VerdictType, type ScanResult } from '@/types';
 import { ShieldCheck, ShieldAlert, AlertTriangle, Globe, Server, Flag, Share2, Download, Copy, ExternalLink, Clock, Check } from 'lucide-react';
 import SandboxWindow from '@/components/SandboxWindow';
 import PhishingAlertCard from '@/components/PhishingAlertCard';
+import EvidencePanel from '@/components/EvidencePanel';
+import RiskScoreGauge from '@/components/RiskScoreGauge';
+import RedirectChain from '@/components/RedirectChain';
+import DomainInfoCard from '@/components/DomainInfoCard';
 import { useLanguage } from './LanguageContext';
 
 interface VerdictDashboardProps {
@@ -14,7 +18,7 @@ interface VerdictDashboardProps {
 
 export default function VerdictDashboard({ result }: VerdictDashboardProps) {
     const { t } = useLanguage();
-    const { verdict, vtStats, screenshotUrl, networkInfo, unshortenedUrl, vtDetails } = result;
+    const { verdict, vtStats, screenshotUrl, networkInfo, unshortenedUrl, vtDetails, riskScore, redirectChain, domainInfo, sslInfo } = result;
     const [copied, setCopied] = useState(false);
     const [currentTime, setCurrentTime] = useState('');
 
@@ -170,7 +174,15 @@ export default function VerdictDashboard({ result }: VerdictDashboardProps) {
                 </div>
             </div>
 
-            <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
+            {/* Redirect Chain */}
+            {redirectChain && <RedirectChain chain={redirectChain} />}
+
+            {/* Why this verdict — evidence & source breakdown */}
+            {riskScore && <EvidencePanel riskScore={riskScore} />}
+
+            <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+                {riskScore && <RiskScoreGauge riskScore={riskScore} />}
+
                 {/* Security Gauge */}
                 <div className="glass-effect rounded-2xl p-8 border border-cyber-safe/30">
                     <h3 className="text-2xl font-bold mb-6 text-cyber-glow flex items-center gap-3">
@@ -215,7 +227,7 @@ export default function VerdictDashboard({ result }: VerdictDashboardProps) {
                 </div>
 
                 {/* Detailed Intelligence (VT + Network) */}
-                <div className="glass-effect rounded-2xl p-8 border border-cyber-safe/30">
+                <div className="glass-effect rounded-2xl p-8 border border-cyber-safe/30 lg:col-span-2">
                     <h3 className="text-2xl font-bold mb-6 text-cyber-glow flex items-center gap-3">
                         <Server className="w-7 h-7" />
                         {t('threatIntel')}
@@ -275,6 +287,8 @@ export default function VerdictDashboard({ result }: VerdictDashboardProps) {
                                     </div>
                                 </div>
                             )}
+
+                            <DomainInfoCard domainInfo={domainInfo} sslInfo={sslInfo} />
                         </div>
 
                         {/* VT Detailed Scans */}

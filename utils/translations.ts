@@ -112,6 +112,55 @@ export const translations = {
         vendorsFlagged: '{threats} حركات أمنية من أصل {total} اكتشفت تهديداً في هذا الرابط.',
         scanDateTime: 'تاريخ ووقت الفحص',
         newScan: 'فحص جديد',
+
+        // Evidence / risk score
+        whyVerdict: 'لماذا هذا الحكم؟',
+        riskScoreLabel: 'درجة الخطورة',
+        confidenceLabel: 'مستوى الثقة',
+        confidenceHigh: 'عالٍ',
+        confidenceMedium: 'متوسط',
+        confidenceLow: 'منخفض',
+        sourcesTitle: 'المصادر المستخدمة',
+        sourceOk: 'تم الفحص',
+        sourceNoKey: 'مفتاح غير مضبوط',
+        sourceError: 'تعذر الفحص',
+
+        // Redirects
+        redirectChainTitle: 'سلسلة التحويلات',
+        redirectHops: '{count} قفزة',
+
+        // Domain / SSL info
+        domainInfoTitle: 'معلومات النطاق والشهادة',
+        domainAgeLabel: 'عمر النطاق',
+        domainAgeDays: '{days} يوماً',
+        registrarLabel: 'جهة التسجيل',
+        sslIssuer: 'جهة إصدار شهادة SSL',
+        sslValidUntil: 'صالحة حتى',
+        sslInvalid: 'شهادة SSL غير صالحة أو منتهية',
+
+        // History
+        historyTitle: 'سجل الفحوصات السابقة',
+        historyEmpty: 'لا يوجد فحوصات سابقة بعد',
+        historyClear: 'مسح السجل',
+        historyRescan: 'إعادة الفحص',
+
+        // Evidence items (used with utils/scoring.ts EvidenceItem.id)
+        evidence_vtDetections: 'رصد {malicious} محرك كخطير و{suspicious} كمشبوه من أصل {total} محرك فحص',
+        evidence_gsbMatch: 'مدرج في قائمة Google Safe Browsing كـ {threat}',
+        evidence_urlhausListed: 'مدرج في قاعدة URLhaus كرابط برمجية خبيثة ({threat})',
+        evidence_phishtankListed: 'مدرج في قاعدة PhishTank كرابط تصيد احتيالي معروف',
+        evidence_ipReputation: 'عنوان IP الخاص بالخادم له سجل إساءة استخدام (نسبة إساءة {score}%)',
+        evidence_homograph: 'النطاق {hostname} يستخدم أحرفاً مشابهة بصرياً (Punycode/Homograph) لخداع المستخدم',
+        evidence_subdomainSpoof: 'يحاول الرابط انتحال {brand} عبر وضع نطاقها كنطاق فرعي مزيف',
+        evidence_typosquat: 'النطاق يشبه بشدة نطاق {brand} الرسمي بفارق أحرف بسيط (Typosquatting)',
+        evidence_brandKeyword: 'يحتوي الرابط على اسم {brand} على نطاق غير رسمي',
+        evidence_suspiciousTld: 'يستخدم امتداد نطاق مشبوه ({hostname})',
+        evidence_suspiciousKeyword: 'يحتوي على كلمات شائعة في محاولات التصيد الاحتيالي',
+        evidence_youngDomain: 'النطاق مسجل حديثاً (منذ {days} يوماً فقط)',
+        evidence_veryYoungDomain: 'النطاق مسجل حديثاً جداً (منذ {days} يوماً فقط) — علامة خطر شائعة في الروابط الخبيثة',
+        evidence_sslInvalid: 'شهادة SSL الخاصة بالموقع غير صالحة أو منتهية أو ذاتية التوقيع',
+        evidence_noHttps: 'الرابط لا يستخدم بروتوكول HTTPS الآمن',
+        evidence_longRedirectChain: 'سلسلة تحويلات طويلة وغير معتادة ({hops} قفزات)',
     },
     en: {
         // Meta
@@ -223,5 +272,54 @@ export const translations = {
         vendorsFlagged: '{threats} out of {total} security vendors flagged this URL as malicious.',
         scanDateTime: 'Scan Date & Time',
         newScan: 'New Scan',
+
+        // Evidence / risk score
+        whyVerdict: 'Why this verdict?',
+        riskScoreLabel: 'Risk Score',
+        confidenceLabel: 'Confidence',
+        confidenceHigh: 'High',
+        confidenceMedium: 'Medium',
+        confidenceLow: 'Low',
+        sourcesTitle: 'Sources Consulted',
+        sourceOk: 'Checked',
+        sourceNoKey: 'No API key configured',
+        sourceError: 'Check failed',
+
+        // Redirects
+        redirectChainTitle: 'Redirect Chain',
+        redirectHops: '{count} hops',
+
+        // Domain / SSL info
+        domainInfoTitle: 'Domain & Certificate Info',
+        domainAgeLabel: 'Domain Age',
+        domainAgeDays: '{days} days',
+        registrarLabel: 'Registrar',
+        sslIssuer: 'SSL Certificate Issuer',
+        sslValidUntil: 'Valid Until',
+        sslInvalid: 'SSL certificate is invalid or expired',
+
+        // History
+        historyTitle: 'Scan History',
+        historyEmpty: 'No previous scans yet',
+        historyClear: 'Clear History',
+        historyRescan: 'Rescan',
+
+        // Evidence items (used with utils/scoring.ts EvidenceItem.id)
+        evidence_vtDetections: '{malicious} engines flagged this as malicious and {suspicious} as suspicious, out of {total} scanning engines',
+        evidence_gsbMatch: 'Listed on Google Safe Browsing as {threat}',
+        evidence_urlhausListed: 'Listed in the URLhaus malware database ({threat})',
+        evidence_phishtankListed: 'Listed in the PhishTank database as a known phishing link',
+        evidence_ipReputation: 'The server IP has an abuse history (abuse confidence {score}%)',
+        evidence_homograph: 'The domain {hostname} uses visually similar characters (Punycode/Homograph) to deceive users',
+        evidence_subdomainSpoof: 'This link attempts to impersonate {brand} by placing its domain as a fake subdomain',
+        evidence_typosquat: 'This domain closely resembles the official {brand} domain with a minor character change (Typosquatting)',
+        evidence_brandKeyword: 'The link contains the name {brand} on an unofficial domain',
+        evidence_suspiciousTld: 'Uses a suspicious domain extension ({hostname})',
+        evidence_suspiciousKeyword: 'Contains words commonly used in phishing attempts',
+        evidence_youngDomain: 'The domain was registered recently (only {days} days ago)',
+        evidence_veryYoungDomain: 'The domain was registered very recently (only {days} days ago) — a common red flag for malicious links',
+        evidence_sslInvalid: 'The site\'s SSL certificate is invalid, expired, or self-signed',
+        evidence_noHttps: 'The link does not use secure HTTPS',
+        evidence_longRedirectChain: 'Unusually long redirect chain ({hops} hops)',
     }
 };

@@ -1,29 +1,19 @@
 import { NextRequest, NextResponse } from 'next/server';
 
-export async function POST(request: NextRequest) {
-    let url = '';
+export const maxDuration = 45;
 
+export async function POST(request: NextRequest) {
     try {
-        const body = await request.json();
-        url = body.url;
+        const { url } = await request.json();
 
         if (!url) {
-            return NextResponse.json(
-                { success: false, error: 'عنوان URL مطلوب' },
-                { status: 400 }
-            );
+            return NextResponse.json({ success: false, error: 'عنوان URL مطلوب' }, { status: 400 });
         }
 
         const apiKey = process.env.URLSCAN_API_KEY;
         if (!apiKey) {
-            console.error('❌ URLSCAN_API_KEY is not set');
-            return NextResponse.json(
-                { success: false, error: 'خطأ في إعدادات الخادم' },
-                { status: 500 }
-            );
+            return NextResponse.json({ success: true, status: 'skipped', screenshotUrl: null });
         }
-
-        console.log('🔍 Starting URLScan for:', url);
 
         // Step 1: Initiate scan
         const scanResponse = await fetch('https://urlscan.io/api/v1/scan/', {
@@ -39,74 +29,48 @@ export async function POST(request: NextRequest) {
         });
 
         if (!scanResponse.ok) {
-            const errorText = await scanResponse.text();
-            console.error('❌ URLScan initiate error:', scanResponse.status, errorText);
-
             if (scanResponse.status === 429) {
-                return NextResponse.json(
-                    { success: true, screenshotUrl: null, note: 'خدمة المعاينة مشغولة' },
-                    { status: 200 }
-                );
+                return NextResponse.json({ success: true, status: 'error', reason: 'rate_limited', screenshotUrl: null });
             }
-
-            // Return success but without screenshot
-            return NextResponse.json({
-                success: true,
-                screenshotUrl: null,
-                note: 'لم يتم إنشاء معاينة',
-            });
+            return NextResponse.json({ success: true, status: 'error', reason: 'submit_failed', screenshotUrl: null });
         }
 
         const scanData = await scanResponse.json();
-        console.log('✅ URLScan initiated:', scanData.uuid);
-
         const resultUrl = scanData.api;
 
-        // Step 2: Wait for scan to complete (URLScan.io typically takes 10-15 seconds)
-        console.log('⏳ Waiting for scan to complete (15 seconds)...');
-        await new Promise(resolve => setTimeout(resolve, 15000));
+        // Step 2: Poll for the result (urlscan.io typically takes 10-15s)
+        let resultData: any = null;
+        const maxAttempts = 5;
+        for (let attempt = 0; attempt < maxAttempts; attempt++) {
+            await new Promise(resolve => setTimeout(resolve, 3000));
 
-        // Step 3: Get scan results
-        const resultResponse = await fetch(resultUrl, {
-            method: 'GET',
-            headers: {
-                'API-Key': apiKey,
-            },
-        });
-
-        if (!resultResponse.ok) {
-            console.log('⚠️ Scan still processing or failed');
-            // Scan might still be processing
-            return NextResponse.json({
-                success: true,
-                screenshotUrl: null,
-                note: 'الفحص قيد المعالجة',
+            const resultResponse = await fetch(resultUrl, {
+                method: 'GET',
+                headers: { 'API-Key': apiKey },
             });
+
+            if (resultResponse.ok) {
+                resultData = await resultResponse.json();
+                break;
+            }
         }
 
-        const resultData = await resultResponse.json();
-        console.log('✅ URLScan completed successfully');
+        if (!resultData) {
+            return NextResponse.json({ success: true, status: 'error', reason: 'timeout', screenshotUrl: null });
+        }
 
-        // Extract screenshot and network info
-        const screenshotUrl = resultData.task?.screenshotURL ||
-            resultData.screenshot ||
-            null;
+        const screenshotUrl = resultData.task?.screenshotURL || resultData.screenshot || null;
 
         return NextResponse.json({
             success: true,
-            screenshotUrl: screenshotUrl,
+            status: 'ok',
+            screenshotUrl,
             country: resultData.page?.country || null,
             ip: resultData.page?.ip || null,
             server: resultData.page?.server || null,
         });
     } catch (error: any) {
-        console.error('❌ URLScan error:', error.message);
-
-        // Return success but without screenshot to not break the scan flow
-        return NextResponse.json({
-            success: true,
-            screenshotUrl: null,
-            note: 'لم يتم إنشاء معاينة',
-        });
+        console.error('URLScan error:', error.message);
+        return NextResponse.json({ success: true, status: 'error', reason: 'exception', screenshotUrl: null });
     }
 }

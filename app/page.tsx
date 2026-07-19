@@ -9,9 +9,21 @@ import VerdictDashboard from '@/components/VerdictDashboard';
 import EducationFooter from '@/components/EducationFooter';
 import LanguageToggle from '@/components/LanguageToggle';
 import ThreatCounter from '@/components/ThreatCounter';
+import ScanHistory from '@/components/ScanHistory';
 import { useLanguage } from '@/components/LanguageContext';
-import { ScanStatus, VerdictType, type ScanResult } from '@/types';
-import { analyzeBrandMismatch } from '@/utils/brandMatcher';
+import { ScanStatus, VerdictType, type ScanResult, type EvidenceItem, type SourceOutcome, type RedirectHop } from '@/types';
+import { analyzeBrandMismatch, analyzeUrlHeuristics } from '@/utils/brandMatcher';
+import { aggregateVerdict, scoreVirusTotal } from '@/utils/scoring';
+import { appendHistory } from '@/utils/history';
+
+async function postJson(url: string, body: unknown) {
+    const res = await fetch(url, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(body),
+    });
+    return res.json();
+}
 
 function HomeContent() {
     const { t } = useLanguage();
@@ -21,22 +33,15 @@ function HomeContent() {
         verdict: VerdictType.UNKNOWN,
     });
 
-    // Auto-scan if query param exists
     useEffect(() => {
         const urlParam = searchParams.get('url');
         if (urlParam && scanResult.status === ScanStatus.IDLE) {
             handleScan(urlParam);
         }
-    }, [searchParams]); // Dependencies adjusted to run only when params change or initially
+        // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, [searchParams]);
 
     const handleScan = async (url: string) => {
-        // ... (rest of handleScan function is same, but I need to include it here or just reference it if I could, but I can't. 
-        // PROMPT: I need to replace Home component with Home wrapped in Suspense and move logic inside.)
-
-        // Actually, just making Home async/client requires Suspense if using useSearchParams in some Next versions? 
-        // 'use client' is already set.
-        // It's better to extract content to a component.
-
         setScanResult({
             status: ScanStatus.UNSHORTENING,
             verdict: VerdictType.UNKNOWN,
@@ -44,88 +49,168 @@ function HomeContent() {
         });
 
         try {
-            // Step 1: Unshorten URL
-            const unshortenRes = await fetch('/api/unshorten', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ url }),
-            });
-
-            const unshortenData = await unshortenRes.json();
-            if (!unshortenData.success) {
-                throw new Error(unshortenData.error);
+            // Step 1: Resolve the final destination by following redirects ourselves
+            // (works for any shortener, not just a hardcoded list).
+            const resolveData = await postJson('/api/resolve', { url });
+            if (!resolveData.success) {
+                throw new Error(resolveData.error || t('statusError'));
             }
 
-            const targetUrl = unshortenData.originalUrl;
+            const targetUrl: string = resolveData.finalUrl || resolveData.originalUrl;
+            const redirectChain: RedirectHop[] = resolveData.chain || [];
 
-            // Step 2: Scan with VirusTotal
             setScanResult(prev => ({
                 ...prev,
                 status: ScanStatus.SCANNING,
                 unshortenedUrl: targetUrl,
+                redirectChain,
             }));
 
-            const vtRes = await fetch('/api/virustotal', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ url: targetUrl }),
-            });
+            // Step 2: Run every independent external source in parallel — one
+            // slow/unavailable source no longer blocks or fails the whole scan.
+            const [vtSettled, urlscanSettled, sbSettled, domainSettled] = await Promise.allSettled([
+                postJson('/api/virustotal', { url: targetUrl }),
+                postJson('/api/urlscan', { url: targetUrl }),
+                postJson('/api/safebrowsing', { url: targetUrl }),
+                postJson('/api/domaininfo', { url: targetUrl }),
+            ]);
 
-            const vtData = await vtRes.json();
-            if (!vtData.success) {
-                throw new Error(vtData.error);
+            setScanResult(prev => ({ ...prev, status: ScanStatus.ANALYZING }));
+
+            const vtData = vtSettled.status === 'fulfilled' ? vtSettled.value : null;
+            const urlscanData = urlscanSettled.status === 'fulfilled' ? urlscanSettled.value : null;
+            const sbData = sbSettled.status === 'fulfilled' ? sbSettled.value : null;
+            const domainData = domainSettled.status === 'fulfilled' ? domainSettled.value : null;
+
+            const blocklistsData = await postJson('/api/blocklists', {
+                url: targetUrl,
+                ip: urlscanData?.ip || undefined,
+            }).catch(() => null);
+
+            const evidence: EvidenceItem[] = [];
+            const sources: SourceOutcome[] = [];
+
+            // VirusTotal
+            if (vtData?.status === 'ok' && vtData.stats) {
+                sources.push({ source: 'virustotal', status: 'ok' });
+                const vtEvidence = scoreVirusTotal(vtData.stats);
+                if (vtEvidence) evidence.push(vtEvidence);
+            } else {
+                sources.push({ source: 'virustotal', status: vtData?.status === 'skipped' ? 'skipped' : 'error' });
             }
 
-            // Step 3: Get screenshot from URLScan
-            setScanResult(prev => ({
-                ...prev,
-                status: ScanStatus.ANALYZING,
-                vtStats: vtData.stats,
-            }));
+            // urlscan.io (preview only — contributes to confidence, not risk points)
+            sources.push({ source: 'urlscan', status: urlscanData?.status === 'ok' ? 'ok' : urlscanData?.status === 'skipped' ? 'skipped' : 'error' });
 
-            const urlscanRes = await fetch('/api/urlscan', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ url: targetUrl }),
-            });
-
-            const urlscanData = await urlscanRes.json();
-
-            // Determine verdict
-            const maliciousCount = vtData.stats.malicious + vtData.stats.suspicious;
-            let verdict = VerdictType.SAFE;
-
-            if (maliciousCount > 5) {
-                verdict = VerdictType.DANGER;
-            } else if (maliciousCount > 0) {
-                verdict = VerdictType.WARNING;
+            // Google Safe Browsing
+            if (sbData?.status === 'ok') {
+                sources.push({ source: 'safebrowsing', status: 'ok' });
+                if (sbData.matches?.length > 0) {
+                    evidence.push({
+                        id: 'gsbMatch',
+                        source: 'safebrowsing',
+                        severity: 'critical',
+                        points: 85,
+                        authoritative: true,
+                        params: { threat: sbData.matches[0] },
+                    });
+                }
+            } else {
+                sources.push({ source: 'safebrowsing', status: sbData?.status === 'skipped' ? 'skipped' : 'error' });
             }
 
-            // Run phishing/brand mismatch analysis
+            // URLhaus / PhishTank / AbuseIPDB
+            if (blocklistsData?.success) {
+                const { urlhaus, phishtank, abuseipdb } = blocklistsData;
+                sources.push({ source: 'urlhaus', status: urlhaus.status });
+                if (urlhaus.status === 'ok' && urlhaus.listed) {
+                    evidence.push({ id: 'urlhausListed', source: 'urlhaus', severity: 'critical', points: 85, authoritative: true, params: { threat: urlhaus.detail || '' } });
+                }
+
+                sources.push({ source: 'phishtank', status: phishtank.status });
+                if (phishtank.status === 'ok' && phishtank.listed) {
+                    evidence.push({ id: 'phishtankListed', source: 'phishtank', severity: 'critical', points: 85, authoritative: true });
+                }
+
+                sources.push({ source: 'abuseipdb', status: abuseipdb.status });
+                if (abuseipdb.status === 'ok' && abuseipdb.listed) {
+                    evidence.push({ id: 'ipReputation', source: 'abuseipdb', severity: 'medium', points: 20, params: { score: abuseipdb.score ?? 0 } });
+                }
+            }
+
+            // Local heuristics — always available, never fails
+            sources.push({ source: 'heuristics', status: 'ok' });
+            evidence.push(...analyzeUrlHeuristics(targetUrl));
             const phishingAlert = analyzeBrandMismatch(targetUrl);
 
-            // Upgrade verdict if high-severity phishing detected
-            if (phishingAlert.detected && phishingAlert.severity === 'high' && verdict === VerdictType.SAFE) {
-                verdict = VerdictType.WARNING;
+            // Domain age + SSL
+            let domainInfo = undefined;
+            let sslInfo = undefined;
+            if (domainData?.success) {
+                if (domainData.domainAge?.status === 'ok') {
+                    sources.push({ source: 'domainAge', status: 'ok' });
+                    domainInfo = domainData.domainAge.info;
+                    if (domainInfo?.ageDays !== undefined) {
+                        if (domainInfo.ageDays < 7) {
+                            evidence.push({ id: 'veryYoungDomain', source: 'domainAge', severity: 'high', points: 25, params: { days: domainInfo.ageDays } });
+                        } else if (domainInfo.ageDays < 30) {
+                            evidence.push({ id: 'youngDomain', source: 'domainAge', severity: 'medium', points: 15, params: { days: domainInfo.ageDays } });
+                        }
+                    }
+                } else {
+                    sources.push({ source: 'domainAge', status: domainData.domainAge?.status === 'skipped' ? 'skipped' : 'error' });
+                }
+
+                if (domainData.ssl?.status === 'ok') {
+                    sources.push({ source: 'ssl', status: 'ok' });
+                    sslInfo = domainData.ssl.info;
+                    if (sslInfo && !sslInfo.valid) {
+                        evidence.push({ id: 'sslInvalid', source: 'ssl', severity: 'medium', points: 25 });
+                    }
+                } else {
+                    sources.push({ source: 'ssl', status: domainData.ssl?.status === 'skipped' ? 'skipped' : 'error' });
+                }
             }
 
-            // Complete scan
-            setScanResult({
+            if (targetUrl.startsWith('http://')) {
+                evidence.push({ id: 'noHttps', source: 'ssl', severity: 'low', points: 15 });
+            }
+
+            if (redirectChain.length > 3) {
+                evidence.push({ id: 'longRedirectChain', source: 'redirects', severity: 'low', points: 10, params: { hops: redirectChain.length } });
+            }
+
+            const aggregated = aggregateVerdict(evidence, sources);
+
+            const finalResult: ScanResult = {
                 status: ScanStatus.COMPLETE,
                 originalUrl: url,
                 unshortenedUrl: targetUrl,
-                verdict,
-                vtStats: vtData.stats,
-                vtDetails: vtData.details,
-                vtUrlMeta: vtData.vtUrlMeta,
-                scanId: vtData.scanId,
-                screenshotUrl: urlscanData.screenshotUrl,
+                verdict: aggregated.verdict,
+                vtStats: vtData?.stats,
+                vtDetails: vtData?.details,
+                vtUrlMeta: vtData?.vtUrlMeta,
+                scanId: vtData?.scanId,
+                screenshotUrl: urlscanData?.screenshotUrl,
                 networkInfo: {
-                    country: urlscanData.country,
-                    ip: urlscanData.ip,
-                    server: urlscanData.server,
+                    country: urlscanData?.country,
+                    ip: urlscanData?.ip,
+                    server: urlscanData?.server,
                 },
                 phishingAlert,
+                riskScore: aggregated,
+                redirectChain,
+                domainInfo,
+                sslInfo,
+            };
+
+            setScanResult(finalResult);
+            appendHistory({
+                url,
+                finalUrl: targetUrl,
+                verdict: aggregated.verdict,
+                score: aggregated.score,
+                timestamp: Date.now(),
             });
         } catch (error: any) {
             setScanResult({
@@ -173,6 +258,11 @@ function HomeContent() {
                     isScanning={scanResult.status !== ScanStatus.IDLE && scanResult.status !== ScanStatus.COMPLETE && scanResult.status !== ScanStatus.ERROR}
                     isCompact={scanResult.status === ScanStatus.COMPLETE || scanResult.status === ScanStatus.ERROR}
                 />
+
+                {/* Scan History (only on the idle/landing screen) */}
+                {scanResult.status === ScanStatus.IDLE && (
+                    <ScanHistory onRescan={handleScan} />
+                )}
 
                 {/* Status Terminal */}
                 {scanResult.status !== ScanStatus.IDLE && scanResult.status !== ScanStatus.COMPLETE && (
