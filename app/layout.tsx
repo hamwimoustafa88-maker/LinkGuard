@@ -1,7 +1,9 @@
-import type { Metadata } from 'next';
+import type { Metadata, Viewport } from 'next';
 import { Cairo, Tajawal } from 'next/font/google';
 import './globals.css';
 import Providers from '@/components/Providers';
+import ServiceWorkerRegistration from '@/components/ServiceWorkerRegistration';
+import InstallPrompt from '@/components/InstallPrompt';
 
 const cairo = Cairo({
     subsets: ['arabic', 'latin'],
@@ -20,6 +22,18 @@ export const metadata: Metadata = {
     title: 'LinkGuard - كاشف الروابط',
     description: 'فحص الروابط من البرمجيات الخبيثة والتصيد الاحتيالي - Scan URLs for malware, phishing, and viruses',
     keywords: ['cybersecurity', 'url scanner', 'malware detection', 'phishing', 'أمن سيبراني'],
+    manifest: '/manifest.webmanifest',
+    appleWebApp: {
+        capable: true,
+        statusBarStyle: 'black-translucent',
+        title: 'LinkGuard',
+    },
+};
+
+export const viewport: Viewport = {
+    width: 'device-width',
+    initialScale: 1,
+    themeColor: '#0a0e27',
 };
 
 export default function RootLayout({
@@ -49,6 +63,8 @@ export default function RootLayout({
                 />
                 <Providers>
                     {children}
+                    <ServiceWorkerRegistration />
+                    <InstallPrompt />
                 </Providers>
             </body>
         </html>

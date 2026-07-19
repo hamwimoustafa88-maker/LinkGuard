@@ -161,6 +161,14 @@ export const translations = {
         evidence_sslInvalid: 'شهادة SSL الخاصة بالموقع غير صالحة أو منتهية أو ذاتية التوقيع',
         evidence_noHttps: 'الرابط لا يستخدم بروتوكول HTTPS الآمن',
         evidence_longRedirectChain: 'سلسلة تحويلات طويلة وغير معتادة ({hops} قفزات)',
+
+        // PWA install prompt
+        installTitle: 'ثبّت LinkGuard',
+        installDesc: 'افحص الروابط بأي وقت مباشرة من هاتفك، حتى بدون فتح المتصفح',
+        installButton: 'تثبيت',
+        installLater: 'لاحقاً',
+        installIosStep1: 'اضغط زر المشاركة',
+        installIosStep2: 'ثم اختر "إضافة إلى الشاشة الرئيسية"',
     },
     en: {
         // Meta
@@ -321,5 +329,13 @@ export const translations = {
         evidence_sslInvalid: 'The site\'s SSL certificate is invalid, expired, or self-signed',
         evidence_noHttps: 'The link does not use secure HTTPS',
         evidence_longRedirectChain: 'Unusually long redirect chain ({hops} hops)',
+
+        // PWA install prompt
+        installTitle: 'Install LinkGuard',
+        installDesc: 'Scan links anytime straight from your phone, without opening a browser',
+        installButton: 'Install',
+        installLater: 'Later',
+        installIosStep1: 'Tap the Share button',
+        installIosStep2: 'Then choose "Add to Home Screen"',
     }
 };
