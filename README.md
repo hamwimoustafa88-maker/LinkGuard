@@ -65,17 +65,18 @@ LinkGuard/
 ### **خطوات التشغيل**
 
 1. **استنساخ المستودع:**  
-   git clone https://github.com/your-username/LinkGuard.git  
+   git clone https://github.com/hamwimoustafa88-maker/LinkGuard/tree/main
+   
    cd LinkGuard
 
-2. **تثبيت الاعتماديات:**  
+3. **تثبيت الاعتماديات:**  
    npm install
 
-3. **إعداد متغيرات البيئة:**  
+4. **إعداد متغيرات البيئة:**  
    قم بنسخ ملف البيئة التجريبي وإنشاء ملفك المحلي:  
    cp .env.example .env.local
 
-4. **تشغيل الخادم المحلي:**  
+5. **تشغيل الخادم المحلي:**  
    npm run dev
 
    افتح المتصفح على العنوان: http://localhost:3000
