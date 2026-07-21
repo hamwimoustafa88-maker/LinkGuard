@@ -1,0 +1,8 @@
+blank_issues_enabled: false
+contact_links:
+  - name: 💬 Questions & Discussions
+    url: https://github.com/hamwimoustafa88-maker/LinkGuard/discussions
+    about: Ask questions, share ideas, or get help. · اطرح الأسئلة وشارك الأفكار.
+  - name: 🔐 Report a security vulnerability privately
+    url: https://github.com/hamwimoustafa88-maker/LinkGuard/security/advisories/new
+    about: Please do NOT open a public issue for security problems. · لا تفتح مشكلة عامة للثغرات الأمنية.

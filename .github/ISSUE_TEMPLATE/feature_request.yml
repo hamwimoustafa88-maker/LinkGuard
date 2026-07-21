@@ -1,0 +1,70 @@
+name: "💡 Feature Request"
+description: "Suggest an idea or improvement. · اقترح فكرة أو تحسيناً."
+title: "[Feature]: "
+labels: ["enhancement"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Thanks for helping improve LinkGuard! Describe your idea below.
+        شكراً لمساعدتك في تطوير LinkGuard! صف فكرتك أدناه.
+
+  - type: checkboxes
+    id: preflight
+    attributes:
+      label: Preflight checklist · قائمة تحقق
+      options:
+        - label: I searched existing issues and this idea has not been suggested yet. · بحثت ولم أجد الفكرة مقترحة.
+          required: true
+
+  - type: textarea
+    id: problem
+    attributes:
+      label: Problem / motivation · المشكلة أو الدافع
+      description: What problem does this solve? Is your request related to a frustration?
+      placeholder: "I'm always frustrated when ..."
+    validations:
+      required: true
+
+  - type: textarea
+    id: solution
+    attributes:
+      label: Proposed solution · الحل المقترح
+      description: A clear and concise description of what you want to happen.
+    validations:
+      required: true
+
+  - type: dropdown
+    id: area
+    attributes:
+      label: Area · المجال
+      options:
+        - New threat source / API integration
+        - Scoring / heuristics
+        - UI / UX
+        - Bilingual / RTL / translations
+        - QR scanning
+        - Performance
+        - Documentation
+        - Other
+    validations:
+      required: true
+
+  - type: textarea
+    id: alternatives
+    attributes:
+      label: Alternatives considered · بدائل تم النظر فيها
+      description: Any alternative solutions or features you've considered.
+    validations:
+      required: false
+
+  - type: checkboxes
+    id: principles
+    attributes:
+      label: Alignment with core principles · التوافق مع المبادئ الأساسية
+      description: See CONTRIBUTING.md → Core Principles.
+      options:
+        - label: This respects graceful degradation (a source failure must not break a scan). · يحترم التدهور الآمن.
+          required: false
+        - label: I'm willing to help implement this. · أنا مستعد للمساعدة في التنفيذ.
+          required: false
