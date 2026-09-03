@@ -77,7 +77,7 @@ export function getClientId(request: Request): string {
     if (cfIp) return cfIp.trim();
 
     const forwarded = request.headers.get('x-forwarded-for');
-    if (forwarded) return forwarded.split(',')[0].trim();
+    if (forwarded) return (forwarded.split(',')[0] ?? forwarded).trim();
 
     return 'unknown';
 }

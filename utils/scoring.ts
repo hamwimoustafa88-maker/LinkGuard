@@ -55,14 +55,15 @@ export function scoreVirusTotal(stats: VTStats): EvidenceItem | null {
 
 /** Google Safe Browsing: any match at all is treated as authoritative. */
 export function scoreSafeBrowsing(matches: string[] | undefined): EvidenceItem | null {
-    if (!matches || matches.length === 0) return null;
+    const firstMatch = matches?.[0];
+    if (!firstMatch) return null;
     return {
         id: 'gsbMatch',
         source: 'safebrowsing',
         severity: 'critical',
         points: POINTS.gsbMatch,
         authoritative: true,
-        params: { threat: matches[0] },
+        params: { threat: firstMatch },
     };
 }
 

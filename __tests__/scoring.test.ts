@@ -111,7 +111,7 @@ describe('aggregateVerdict', () => {
             { id: 'high', source: 'heuristics', severity: 'high', points: 40 },
         ];
         const result = aggregateVerdict(evidence, okSources);
-        expect(result.evidence[0].id).toBe('high');
+        expect(result.evidence[0]!.id).toBe('high');
     });
 });
 
@@ -162,7 +162,7 @@ describe('scoreBlocklists', () => {
         expect(byId.urlhausListed).toMatchObject({ points: POINTS.urlhausListed, authoritative: true });
         expect(byId.phishtankListed).toMatchObject({ points: POINTS.phishtankListed, authoritative: true });
         expect(byId.ipReputation).toMatchObject({ points: POINTS.ipReputation, params: { score: 80 } });
-        expect(byId.ipReputation.authoritative).toBeUndefined();
+        expect(byId.ipReputation!.authoritative).toBeUndefined();
     });
 });
 

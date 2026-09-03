@@ -39,7 +39,7 @@ describe('utils/history', () => {
         for (let i = 0; i < 55; i++) appendHistory(entry(i));
         const history = getHistory();
         expect(history).toHaveLength(50);
-        expect(history[0].timestamp).toBe(54);
+        expect(history[0]!.timestamp).toBe(54);
     });
 
     it('clearHistory empties the store', async () => {
