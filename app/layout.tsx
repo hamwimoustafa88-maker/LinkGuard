@@ -56,7 +56,7 @@ export default function RootLayout({
 
     return (
         <html lang="ar" dir="rtl">
-            <body className={`${cairo.variable} ${tajawal.variable} antialiased bg-cyber-dark text-white`}>
+            <body className={`${cairo.variable} ${tajawal.variable} font-cairo antialiased bg-cyber-dark text-white`}>
                 <script
                     type="application/ld+json"
                     dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}

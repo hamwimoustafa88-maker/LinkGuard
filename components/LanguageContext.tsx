@@ -33,10 +33,8 @@ export function LanguageProvider({ children }: { children: React.ReactNode }) {
         localStorage.setItem('linkguard-lang', language);
         document.documentElement.lang = language;
         document.documentElement.dir = direction;
-
-        // Force font update if needed mainly for body class toggling or let CSS handle it via :lang()
-        // But since we use CSS variables for fonts, we can switch classes on body if we want, 
-        // OR we can just rely on the 'dir' attribute and Tailwind's logic.
+        document.body.classList.remove('font-cairo', 'font-tajawal');
+        document.body.classList.add(language === 'ar' ? 'font-cairo' : 'font-tajawal');
     }, [language, direction, mounted]);
 
     const setLanguage = (lang: Language) => {
@@ -61,9 +59,7 @@ export function LanguageProvider({ children }: { children: React.ReactNode }) {
 
     return (
         <LanguageContext.Provider value={{ language, direction, setLanguage, toggleLanguage, t }}>
-            <div dir={direction} className={language === 'ar' ? 'font-cairo' : 'font-tajawal'}>
-                {children}
-            </div>
+            {children}
         </LanguageContext.Provider>
     );
 }
