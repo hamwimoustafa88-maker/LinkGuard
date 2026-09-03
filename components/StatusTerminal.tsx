@@ -63,7 +63,7 @@ export default function StatusTerminal({ status }: StatusTerminalProps) {
                 {/* Progress bar */}
                 <div className="mt-6 h-2 bg-cyber-navy rounded-full overflow-hidden">
                     <motion.div
-                        className="h-full bg-gradient-to-r from-cyber-safe to-cyber-glow"
+                        className="h-full bg-linear-to-r from-cyber-safe to-cyber-glow"
                         initial={{ width: '0%' }}
                         animate={{
                             width: status === ScanStatus.UNSHORTENING ? '33%' :

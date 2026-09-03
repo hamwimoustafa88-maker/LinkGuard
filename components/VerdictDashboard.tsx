@@ -96,7 +96,7 @@ export default function VerdictDashboard({ result }: VerdictDashboardProps) {
 
             {/* Main Verdict Card */}
             <div className={`glass-effect rounded-3xl p-10 mb-8 border-4 ${config.colorClass} ${config.glowClass} relative overflow-hidden`}>
-                <div className="absolute inset-0 bg-gradient-to-b from-transparent to-black/20 pointer-events-none" />
+                <div className="absolute inset-0 bg-linear-to-b from-transparent to-black/20 pointer-events-none" />
 
                 {/* Export / Download PDF Button */}
                 <button
@@ -215,7 +215,7 @@ export default function VerdictDashboard({ result }: VerdictDashboardProps) {
                             </svg>
                             <div className="absolute inset-0 flex flex-col items-center justify-center text-center">
                                 <span className="text-5xl font-bold font-mono" style={{ color: config.bgColor }}>{threatCount}</span>
-                                <span className="text-gray-500 font-bold border-t border-gray-700 mt-1 pt-1 min-w-[3rem]">/ {totalVendors}</span>
+                                <span className="text-gray-500 font-bold border-t border-gray-700 mt-1 pt-1 min-w-12">/ {totalVendors}</span>
                             </div>
                         </div>
 
@@ -306,11 +306,11 @@ export default function VerdictDashboard({ result }: VerdictDashboardProps) {
                             </h4>
 
                             {threatCount > 0 ? (
-                                <div className="space-y-2 max-h-48 overflow-y-auto custom-scrollbar">
+                                <div className="space-y-2 max-h-48 overflow-y-auto">
                                     {vtDetails?.scans && Object.entries(vtDetails.scans)
                                         .filter(([_, data]) => data.category === 'malicious' || data.category === 'suspicious')
                                         .map(([engine, data]) => (
-                                            <div key={engine} className="flex justify-between items-center p-2 bg-red-900/20 rounded border border-red-500/30">
+                                            <div key={engine} className="flex justify-between items-center p-2 bg-red-900/20 rounded-sm border border-red-500/30">
                                                 <span className="font-bold text-gray-200 text-sm">{engine}</span>
                                                 <span className="text-red-400 text-xs font-mono">{data.result}</span>
                                             </div>

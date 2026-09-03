@@ -52,7 +52,7 @@ export default function ScanHistory({ onRescan }: ScanHistoryProps) {
                     </button>
                 </div>
 
-                <div className="space-y-2 max-h-64 overflow-y-auto custom-scrollbar">
+                <div className="space-y-2 max-h-64 overflow-y-auto">
                     {entries.map((entry, i) => (
                         <div key={i} className="flex items-center justify-between gap-3 p-3 bg-cyber-navy/30 rounded-xl">
                             <div className="min-w-0 flex-1">

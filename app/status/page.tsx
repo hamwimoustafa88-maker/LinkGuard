@@ -111,8 +111,8 @@ export default function StatusPage() {
     return (
         <main className="min-h-screen relative overflow-hidden bg-cyber-dark text-white p-8">
             {/* Background */}
-            <div className="fixed inset-0 bg-gradient-to-br from-cyber-dark via-cyber-navy to-cyber-dark -z-10" />
-            <div className="fixed inset-0 bg-[radial-gradient(ellipse_at_top,_var(--tw-gradient-stops))] from-cyan-900/20 via-transparent to-transparent -z-10" />
+            <div className="fixed inset-0 bg-linear-to-br from-cyber-dark via-cyber-navy to-cyber-dark -z-10" />
+            <div className="fixed inset-0 bg-radial-[at_top] from-cyan-900/20 via-transparent to-transparent -z-10" />
 
             <div className="max-w-4xl mx-auto">
                 <header className="flex items-center justify-between mb-12">

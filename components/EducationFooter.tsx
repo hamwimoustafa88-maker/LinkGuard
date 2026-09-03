@@ -64,7 +64,7 @@ export default function EducationFooter() {
                             whileHover={{ y: -8, boxShadow: '0 10px 30px -10px rgba(0, 255, 136, 0.3)' }}
                             className="glass-effect rounded-2xl p-6 border border-cyber-safe/20 hover:border-cyber-safe/50 transition-all duration-300"
                         >
-                            <div className="bg-gradient-to-br from-cyber-safe/20 to-cyber-glow/20 w-16 h-16 rounded-xl flex items-center justify-center mb-4">
+                            <div className="bg-linear-to-br from-cyber-safe/20 to-cyber-glow/20 w-16 h-16 rounded-xl flex items-center justify-center mb-4">
                                 <Icon className="w-8 h-8 text-cyber-safe" />
                             </div>
                             <h3 className="text-xl font-bold mb-2 text-white">{tip.title}</h3>
@@ -104,7 +104,7 @@ export default function EducationFooter() {
                             animate={{ opacity: 1 }}
                             exit={{ opacity: 0 }}
                             onClick={() => setIsDeveloperModalOpen(false)}
-                            className="absolute inset-0 bg-black/80 backdrop-blur-sm"
+                            className="absolute inset-0 bg-black/80 backdrop-blur-xs"
                         />
                         <motion.div
                             initial={{ opacity: 0, scale: 0.9, y: 20 }}
@@ -120,7 +120,7 @@ export default function EducationFooter() {
                             </button>
 
                             <div className="text-center">
-                                <div className="w-40 h-40 mx-auto mb-6 rounded-full p-1 bg-gradient-to-br from-cyber-safe to-cyber-glow shadow-[0_0_30px_rgba(0,255,136,0.3)] relative group">
+                                <div className="w-40 h-40 mx-auto mb-6 rounded-full p-1 bg-linear-to-br from-cyber-safe to-cyber-glow shadow-[0_0_30px_rgba(0,255,136,0.3)] relative group">
                                     <div className="relative w-full h-full rounded-full overflow-hidden bg-cyber-dark border-4 border-black/50">
                                         <Image
                                             src="/developer.png"
@@ -130,7 +130,7 @@ export default function EducationFooter() {
                                         />
                                     </div>
                                 </div>
-                                <h3 className="text-3xl font-bold mb-2 bg-gradient-to-r from-white to-gray-300 bg-clip-text text-transparent">
+                                <h3 className="text-3xl font-bold mb-2 bg-linear-to-r from-white to-gray-300 bg-clip-text text-transparent">
                                     {t('devName')}
                                 </h3>
                                 <p className="text-cyber-glow mb-6 font-mono text-sm tracking-wide">{t('devTitle')}</p>

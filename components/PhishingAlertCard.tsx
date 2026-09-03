@@ -65,7 +65,7 @@ export default function PhishingAlertCard({ alert }: PhishingAlertCardProps) {
                 {/* Real Brand */}
                 <div className="text-center">
                     <div className="mb-3">
-                        <div className="w-24 h-24 mx-auto bg-gradient-to-br from-emerald-500 to-cyan-500 rounded-2xl flex items-center justify-center">
+                        <div className="w-24 h-24 mx-auto bg-linear-to-br from-emerald-500 to-cyan-500 rounded-2xl flex items-center justify-center">
                             <span className="text-4xl font-bold text-white">{alert.brandName?.charAt(0)}</span>
                         </div>
                     </div>

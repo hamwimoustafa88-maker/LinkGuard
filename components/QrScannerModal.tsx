@@ -110,7 +110,7 @@ export default function QrScannerModal({ isOpen, onClose, onScanSuccess }: QrSca
                     initial={{ opacity: 0 }}
                     animate={{ opacity: 1 }}
                     exit={{ opacity: 0 }}
-                    className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/80 backdrop-blur-sm"
+                    className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/80 backdrop-blur-xs"
                     onClick={handleClose}
                 >
                     <motion.div
@@ -153,7 +153,7 @@ export default function QrScannerModal({ isOpen, onClose, onScanSuccess }: QrSca
                                 >
                                     {/* Scanning line animation */}
                                     <motion.div
-                                        className="absolute left-0 right-0 h-1 bg-gradient-to-r from-transparent via-cyber-safe to-transparent"
+                                        className="absolute left-0 right-0 h-1 bg-linear-to-r from-transparent via-cyber-safe to-transparent"
                                         animate={{
                                             top: ['0%', '100%'],
                                         }}
@@ -174,7 +174,7 @@ export default function QrScannerModal({ isOpen, onClose, onScanSuccess }: QrSca
                                 animate={{ opacity: 1, y: 0 }}
                                 className="flex items-center gap-3 p-4 bg-cyber-danger/20 border border-cyber-danger rounded-xl"
                             >
-                                <AlertTriangle className="w-5 h-5 text-cyber-danger flex-shrink-0" />
+                                <AlertTriangle className="w-5 h-5 text-cyber-danger shrink-0" />
                                 <p className="text-cyber-danger text-sm">{error}</p>
                             </motion.div>
                         )}

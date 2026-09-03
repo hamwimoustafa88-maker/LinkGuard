@@ -15,7 +15,7 @@ export default function LanguageToggle() {
             className="flex items-center gap-2 px-4 py-2 bg-cyber-navy/50 hover:bg-cyber-navy border border-cyber-glow/30 rounded-full text-cyber-glow transition-all"
         >
             <Globe className="w-4 h-4" />
-            <span className="font-bold relative top-[1px]">
+            <span className="font-bold relative top-px">
                 {language === 'ar' ? 'English' : 'العربية'}
             </span>
         </motion.button>

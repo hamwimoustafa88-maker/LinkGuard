@@ -223,8 +223,8 @@ function HomeContent() {
     return (
         <main className="min-h-screen relative overflow-hidden flex flex-col">
             {/* Background effects */}
-            <div className="fixed inset-0 bg-gradient-to-br from-cyber-dark via-cyber-navy to-cyber-dark" />
-            <div className="fixed inset-0 bg-[radial-gradient(ellipse_at_top,_var(--tw-gradient-stops))] from-cyan-900/20 via-transparent to-transparent" />
+            <div className="fixed inset-0 bg-linear-to-br from-cyber-dark via-cyber-navy to-cyber-dark" />
+            <div className="fixed inset-0 bg-radial-[at_top] from-cyan-900/20 via-transparent to-transparent" />
 
             <div className="relative z-10 container mx-auto px-4 py-8 flex-1 flex flex-col">
                 {/* Navbar / Top Bar */}
@@ -241,7 +241,7 @@ function HomeContent() {
                         </div>
                         <div className="flex items-center justify-center gap-4 mb-4">
                             <ShieldCheck className="w-14 h-14 text-cyber-safe" />
-                            <h1 className="text-6xl font-bold bg-gradient-to-r from-cyber-safe to-cyber-glow bg-clip-text text-transparent">
+                            <h1 className="text-6xl font-bold bg-linear-to-r from-cyber-safe to-cyber-glow bg-clip-text text-transparent">
                                 {t('appTitle')}
                             </h1>
                         </div>
