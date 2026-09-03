@@ -34,13 +34,27 @@ When reporting, please include:
 
 LinkGuard is a client + Next.js API scanner. Security-relevant areas include:
 
-- **SSRF protection** in `/api/resolve` (redirect resolution must not reach internal networks).
+- **SSRF protection** in `/api/resolve` and `/api/domaininfo` (redirect resolution and domain
+  lookups must not reach internal networks) — see [`lib/server/ssrfGuard.ts`](lib/server/ssrfGuard.ts).
 - **API key handling** — keys are server-side only and must never be exposed to the client.
 - **Input handling** of user-supplied URLs across all API routes.
 - **Dependency vulnerabilities** in the npm supply chain.
 
-*مناطق الأمان المهمة: حماية SSRF في `/api/resolve`، التعامل مع مفاتيح الـ API من جهة الخادم فقط،
-معالجة الروابط المُدخلة، وثغرات الاعتماديات.*
+*مناطق الأمان المهمة: حماية SSRF في `/api/resolve` و`/api/domaininfo`، التعامل مع مفاتيح الـ API
+من جهة الخادم فقط، معالجة الروابط المُدخلة، وثغرات الاعتماديات.*
+
+### Known limitation: DNS rebinding · قيد معروف: DNS Rebinding
+
+The SSRF guard resolves a hostname and validates the IP at check time, then lets `fetch`
+re-resolve the same hostname itself moments later — a small window in which a
+DNS-rebinding attacker could swap the answer to a private address between the two lookups.
+Full mitigation (pinning the validated IP and setting the `Host` header explicitly) is out of
+scope for this project's threat model; this is an accepted, documented risk rather than an
+oversight. Reports of a *practical* bypass are still welcome via the process above.
+
+*يتحقق حارس SSRF من عنوان الـ IP عند الفحص، ثم يعيد `fetch` تحليل الاسم بنفسه لاحقاً — ما يترك
+نافذة صغيرة لهجوم DNS Rebinding. المعالجة الكاملة خارج نطاق هذا المشروع حالياً؛ هذا قيد مقبول
+وموثّق، لا إغفال. التقارير عن استغلال عملي فعلي لا تزال موضع ترحيب.*
 
 ## ✅ Supported Versions · النسخ المدعومة
 

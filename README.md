@@ -83,6 +83,36 @@ optional — a missing or failing source simply lowers confidence instead of bre
 
 ---
 
+## 🏗️ Architecture · البنية
+
+A scan runs through four stages, each one degrading independently rather than failing the
+whole request:
+
+1. **Resolve** ([`app/api/resolve`](app/api/resolve/route.ts)) — follows the redirect chain
+   itself (up to 8 hops), validating every hop against [`lib/server/ssrfGuard.ts`](lib/server/ssrfGuard.ts)
+   before it's fetched.
+2. **Scan** ([`lib/scan.ts`](lib/scan.ts)) — fans out to VirusTotal, urlscan.io, Google Safe
+   Browsing, the blocklist trio (URLhaus/PhishTank/AbuseIPDB), and domain/SSL intelligence
+   **in parallel**; a slow or failing source only lowers confidence, never blocks the others.
+3. **Analyze** ([`utils/brandMatcher.ts`](utils/brandMatcher.ts)) — local heuristics
+   (typosquatting, homograph/Punycode, subdomain impersonation) run client-side, no network
+   or API key required.
+4. **Score** ([`utils/scoring.ts`](utils/scoring.ts)) — every signal becomes a weighted
+   `EvidenceItem`; `aggregateVerdict()` sums the points into a 0–100 score, floors it for any
+   authoritative match (e.g. a Safe Browsing hit), and derives a verdict + confidence level
+   from how many sources actually responded.
+
+Every external route shares [`lib/server/apiHelpers.ts`](lib/server/apiHelpers.ts) for
+timeouts, per-route rate limiting, and result caching, so a new source only needs to implement
+its own request/response mapping.
+
+*تمرّ عملية الفحص بأربع مراحل، كل واحدة تتدهور بشكل مستقل دون إفشال الطلب كاملاً: **الحل**
+(تتبّع التحويلات محلياً مع حماية SSRF)، **الفحص** (استعلام متوازٍ من كل المصادر الخارجية)،
+**التحليل** (تحليلات محلية دون شبكة)، ثم **التقييم** (محرك موزون ينتج الدرجة والحكم ومستوى
+الثقة).*
+
+---
+
 ## 🚀 Quick Start · البدء السريع
 
 ### Prerequisites · المتطلبات المسبقة
@@ -124,6 +154,7 @@ npm run lint       # Run ESLint
 npm run typecheck  # Type-check with tsc --noEmit
 npm test           # Run the Vitest test suite
 npm run test:watch # Run tests in watch mode
+npm run test:coverage # Run tests with a coverage report
 ```
 
 ---
@@ -168,7 +199,7 @@ Contributions are what make the open-source community amazing — **all PRs are 
 
 Please keep the bilingual (AR/EN) UX and the graceful-degradation contract intact — a new
 source should never be able to break an existing scan. See [CONTRIBUTING.md](CONTRIBUTING.md)
-for the full guide.
+for the full guide, and [CHANGELOG.md](CHANGELOG.md) for the notable-changes history.
 
 ---
 
