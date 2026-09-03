@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { assertPublicHttpUrl, SsrfBlockedError } from '@/lib/server/ssrfGuard';
-import { checkRateLimit, getClientId } from '@/lib/server/rateLimit';
+import { ApiError, enforceRateLimit, fetchWithTimeout, requireUrlBody, ssrfBlockedResponse } from '@/lib/server/apiHelpers';
 import type { RedirectHop } from '@/types';
 
 export const runtime = 'nodejs';
@@ -9,31 +9,16 @@ export const maxDuration = 45;
 const MAX_HOPS = 8;
 const HOP_TIMEOUT_MS = 5000;
 
-async function followRedirects(startUrl: string): Promise<{ finalUrl: string; chain: RedirectHop[] }> {
+async function followRedirects(startUrl: string): Promise<{ finalUrl: string; chain: RedirectHop[]; truncated: boolean }> {
     const chain: RedirectHop[] = [];
     let current = startUrl;
 
     for (let i = 0; i < MAX_HOPS; i++) {
         const validated = await assertPublicHttpUrl(current);
-        const controller = new AbortController();
-        const timeout = setTimeout(() => controller.abort(), HOP_TIMEOUT_MS);
 
-        let response: Response;
-        try {
-            response = await fetch(validated.toString(), {
-                method: 'HEAD',
-                redirect: 'manual',
-                signal: controller.signal,
-            });
-            if (response.status === 405 || response.status === 501) {
-                response = await fetch(validated.toString(), {
-                    method: 'GET',
-                    redirect: 'manual',
-                    signal: controller.signal,
-                });
-            }
-        } finally {
-            clearTimeout(timeout);
+        let response = await fetchWithTimeout(validated.toString(), { method: 'HEAD', redirect: 'manual' }, HOP_TIMEOUT_MS);
+        if (response.status === 405 || response.status === 501) {
+            response = await fetchWithTimeout(validated.toString(), { method: 'GET', redirect: 'manual' }, HOP_TIMEOUT_MS);
         }
 
         chain.push({ url: validated.toString(), status: response.status });
@@ -41,76 +26,79 @@ async function followRedirects(startUrl: string): Promise<{ finalUrl: string; ch
         const location = response.headers.get('location');
         const isRedirect = response.status >= 300 && response.status < 400 && !!location;
         if (!isRedirect) {
-            return { finalUrl: validated.toString(), chain };
+            return { finalUrl: validated.toString(), chain, truncated: false };
         }
 
         current = new URL(location!, validated).toString();
     }
 
-    return { finalUrl: current, chain };
+    // Hop budget exhausted with a pending redirect still unresolved. `current`
+    // was never fetched or SSRF-checked at this point - validate it before
+    // handing it back, since it's about to be forwarded to virustotal/
+    // urlscan/blocklists, none of which re-guard against internal targets.
+    const finalValidated = await assertPublicHttpUrl(current);
+    return { finalUrl: finalValidated.toString(), chain, truncated: true };
 }
 
 export async function POST(request: NextRequest) {
+    const rateLimited = enforceRateLimit('resolve', request);
+    if (rateLimited) return rateLimited;
+
     let url = '';
 
-    const rateLimit = checkRateLimit(getClientId(request));
-    if (!rateLimit.allowed) {
-        return NextResponse.json(
-            { success: false, error: 'عدد كبير من الطلبات، يرجى المحاولة لاحقاً', retryAfterMs: rateLimit.retryAfterMs },
-            { status: 429 }
-        );
-    }
-
     try {
-        const body = await request.json();
+        const body = await requireUrlBody<{ url: string }>(request);
         url = body.url;
 
-        if (!url) {
-            return NextResponse.json({ success: false, error: 'عنوان URL مطلوب' }, { status: 400 });
-        }
-
         try {
-            const { finalUrl, chain } = await followRedirects(url);
-            return NextResponse.json({ success: true, originalUrl: finalUrl, finalUrl, chain });
+            const { finalUrl, chain, truncated } = await followRedirects(url);
+            return NextResponse.json({ success: true, originalUrl: finalUrl, finalUrl, chain, truncated });
         } catch (err) {
             if (err instanceof SsrfBlockedError) {
-                return NextResponse.json(
-                    { success: false, error: 'تم حظر هذا الرابط لأنه يشير إلى عنوان شبكة داخلي غير آمن', blocked: true },
-                    { status: 400 }
-                );
+                return ssrfBlockedResponse();
             }
             throw err;
         }
     } catch (error) {
+        if (error instanceof ApiError) {
+            return NextResponse.json(error.body, { status: error.status });
+        }
+
         // Direct resolution failed (network error, timeout, host refuses HEAD/GET).
-        // Fall back to unshorten.me when configured, otherwise pass the input through.
+        // Fall back to unshorten.me when configured; its result is SSRF-checked
+        // too, since it's just as capable of returning an internal-network URL.
         const apiKey = process.env.UNSHORTEN_API_KEY;
         if (apiKey) {
             try {
                 const apiUrl = `https://unshorten.me/api/v2/unshorten?url=${encodeURIComponent(url)}`;
-                const response = await fetch(apiUrl, { headers: { Authorization: `Token ${apiKey}` } });
+                const response = await fetchWithTimeout(apiUrl, { headers: { Authorization: `Token ${apiKey}` } }, 8000);
                 if (response.ok) {
                     const data = await response.json();
                     const resolved = data.resolved_url || data.url || url;
+                    const validated = await assertPublicHttpUrl(resolved);
                     return NextResponse.json({
                         success: true,
-                        originalUrl: resolved,
-                        finalUrl: resolved,
+                        originalUrl: validated.toString(),
+                        finalUrl: validated.toString(),
                         chain: [],
+                        truncated: false,
                         note: 'تم الحل عبر خدمة unshorten.me الاحتياطية',
                     });
                 }
             } catch {
-                // fall through to raw passthrough below
+                // SsrfBlockedError or a network failure on the fallback itself -
+                // either way, fall through to the failure response below rather
+                // than silently trusting an unvalidated URL.
             }
         }
 
-        return NextResponse.json({
-            success: true,
-            originalUrl: url || 'unknown',
-            finalUrl: url || 'unknown',
-            chain: [],
-            note: 'تعذر تتبع التحويلات، تم استخدام الرابط الأصلي',
-        });
+        // Previously this returned success:true with the raw, unresolved input
+        // URL - meaning a link that failed to resolve could get scanned and
+        // reported as clean under its unshortened face. Report the failure
+        // instead; the client surfaces it rather than silently degrading.
+        return NextResponse.json(
+            { success: false, code: 'resolve_failed', error: 'تعذر تتبع التحويلات لهذا الرابط' },
+            { status: 502 }
+        );
     }
 }

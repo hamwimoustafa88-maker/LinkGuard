@@ -58,6 +58,7 @@ export const translations = {
         vtReport: 'تقرير VirusTotal',
         viewOriginalReport: 'عرض التقرير الأصلي',
         cleanMessage: 'نظيف: لم يبلغ أي محرك فحص عن مشاكل.',
+        engineDetailUnavailable: 'رُصدت مؤشرات خطر، لكن تفاصيل محركات الفحص غير متاحة حالياً.',
 
         // Verification Steps
         stepUnshorten: 'فك الرابط المختصر',
@@ -225,6 +226,7 @@ export const translations = {
         vtReport: 'VirusTotal Report',
         viewOriginalReport: 'View Original Report',
         cleanMessage: 'Clean: No scanning engine reported issues.',
+        engineDetailUnavailable: 'Risk indicators were detected, but per-engine detail is unavailable right now.',
 
         // Verification Steps
         stepUnshorten: 'Unshorten URL',

@@ -109,18 +109,17 @@ export interface ScanResult {
         server?: string;
     };
     phishingAlert?: PhishingAlert;
-    vtDetails?: {
-        votes?: {
-            harmless: number;
-            malicious: number;
-        };
-        scans?: Record<string, {
-            category: string;
-            result: string;
-            method: string;
-            engine_name: string;
-        }>;
-    };
+    // Per-engine VirusTotal detection results, keyed by engine name. Was
+    // previously bundled under a `vtDetails.scans` field that the API never
+    // actually populated (the engine map was returned flat, under a
+    // differently-shaped `vtDetails`), so this list was always empty in the
+    // UI regardless of the real detection count.
+    vtEngines?: Record<string, {
+        category: string;
+        result: string | null;
+        method: string;
+        engine_name: string;
+    }>;
     vtUrlMeta?: {
         title?: string;
         tags?: string[];

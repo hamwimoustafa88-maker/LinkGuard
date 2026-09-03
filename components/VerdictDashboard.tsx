@@ -18,7 +18,7 @@ interface VerdictDashboardProps {
 
 export default function VerdictDashboard({ result }: VerdictDashboardProps) {
     const { t } = useLanguage();
-    const { verdict, vtStats, screenshotUrl, networkInfo, unshortenedUrl, vtDetails, riskScore, redirectChain, domainInfo, sslInfo } = result;
+    const { verdict, vtStats, screenshotUrl, networkInfo, unshortenedUrl, vtEngines, vtUrlMeta, riskScore, redirectChain, domainInfo, sslInfo } = result;
     const [copied, setCopied] = useState(false);
     const [currentTime, setCurrentTime] = useState('');
 
@@ -68,6 +68,9 @@ export default function VerdictDashboard({ result }: VerdictDashboardProps) {
     const threatCount = vtStats ? vtStats.malicious + vtStats.suspicious : 0;
     const harmlessCount = vtStats ? vtStats.harmless + vtStats.undetected : 0;
     const safetyScore = totalVendors > 0 ? Math.round((harmlessCount / totalVendors) * 100) : 0;
+    const flaggedEngines = vtEngines
+        ? Object.entries(vtEngines).filter(([, data]) => data.category === 'malicious' || data.category === 'suspicious')
+        : [];
 
     const handleShare = () => {
         const text = verdict === VerdictType.DANGER
@@ -239,17 +242,17 @@ export default function VerdictDashboard({ result }: VerdictDashboardProps) {
                             <h4 className="text-gray-400 text-sm font-bold border-b border-gray-700 pb-2 mb-2">{t('urlServerInfo')}</h4>
 
                             {/* Page Title & Tags */}
-                            {(vtDetails as any)?.meta?.title && (
+                            {vtUrlMeta?.title && (
                                 <div className="mb-3">
                                     <p className="text-xs text-cyber-safe mb-1">{t('pageTitle')}</p>
-                                    <p className="text-white text-sm font-bold truncate">{(vtDetails as any).meta.title}</p>
+                                    <p className="text-white text-sm font-bold truncate">{vtUrlMeta.title}</p>
                                 </div>
                             )}
 
                             {/* Tags */}
-                            {(vtDetails as any)?.meta?.tags && (vtDetails as any).meta.tags.length > 0 && (
+                            {vtUrlMeta?.tags && vtUrlMeta.tags.length > 0 && (
                                 <div className="flex flex-wrap gap-2 mb-3">
-                                    {(vtDetails as any).meta.tags.map((tag: string, i: number) => (
+                                    {vtUrlMeta.tags.map((tag, i) => (
                                         <span key={i} className="text-xs bg-cyber-safe/10 text-cyber-safe px-2 py-1 rounded-full border border-cyber-safe/20">
                                             #{tag}
                                         </span>
@@ -258,11 +261,11 @@ export default function VerdictDashboard({ result }: VerdictDashboardProps) {
                             )}
 
                             {/* Reputation */}
-                            {(vtDetails as any)?.meta?.reputation !== undefined && (
+                            {vtUrlMeta?.reputation !== undefined && (
                                 <div className="flex items-center justify-between bg-black/20 p-2 rounded-lg">
                                     <span className="text-gray-400 text-xs">{t('communityReputation')}</span>
-                                    <span className={`text-sm font-bold ${(vtDetails as any).meta.reputation > 0 ? 'text-green-400' : (vtDetails as any).meta.reputation < 0 ? 'text-red-400' : 'text-gray-400'}`}>
-                                        {(vtDetails as any).meta.reputation > 0 ? '+' : ''}{(vtDetails as any).meta.reputation}
+                                    <span className={`text-sm font-bold ${vtUrlMeta.reputation > 0 ? 'text-green-400' : vtUrlMeta.reputation < 0 ? 'text-red-400' : 'text-gray-400'}`}>
+                                        {vtUrlMeta.reputation > 0 ? '+' : ''}{vtUrlMeta.reputation}
                                     </span>
                                 </div>
                             )}
@@ -305,17 +308,19 @@ export default function VerdictDashboard({ result }: VerdictDashboardProps) {
                                 </a>
                             </h4>
 
-                            {threatCount > 0 ? (
+                            {threatCount > 0 && flaggedEngines.length > 0 ? (
                                 <div className="space-y-2 max-h-48 overflow-y-auto">
-                                    {vtDetails?.scans && Object.entries(vtDetails.scans)
-                                        .filter(([_, data]) => data.category === 'malicious' || data.category === 'suspicious')
-                                        .map(([engine, data]) => (
-                                            <div key={engine} className="flex justify-between items-center p-2 bg-red-900/20 rounded-sm border border-red-500/30">
-                                                <span className="font-bold text-gray-200 text-sm">{engine}</span>
-                                                <span className="text-red-400 text-xs font-mono">{data.result}</span>
-                                            </div>
-                                        ))
-                                    }
+                                    {flaggedEngines.map(([engine, data]) => (
+                                        <div key={engine} className="flex justify-between items-center p-2 bg-red-900/20 rounded-sm border border-red-500/30">
+                                            <span className="font-bold text-gray-200 text-sm">{engine}</span>
+                                            <span className="text-red-400 text-xs font-mono">{data.result}</span>
+                                        </div>
+                                    ))}
+                                </div>
+                            ) : threatCount > 0 ? (
+                                <div className="text-center py-4">
+                                    <AlertTriangle className="w-10 h-10 text-yellow-500 mx-auto mb-2" />
+                                    <p className="text-gray-400 text-sm">{t('engineDetailUnavailable')}</p>
                                 </div>
                             ) : (
                                 <div className="text-center py-4">

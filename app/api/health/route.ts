@@ -1,14 +1,19 @@
-import { NextResponse } from 'next/server';
+import { NextRequest, NextResponse } from 'next/server';
+import { cleanKey, enforceRateLimit, fetchWithTimeout } from '@/lib/server/apiHelpers';
+
+// /status is an intentionally public live-status page (see README), so this
+// route's per-service detail (including which optional keys aren't
+// configured) is meant to be visible - it was previously just unprotected
+// against being hammered, unlike every other route. Rate limiting is the fix
+// here, not hiding the data the page is built to show.
+export const runtime = 'nodejs';
+export const dynamic = 'force-dynamic';
+export const maxDuration = 30;
 
 interface ServiceStatus {
     status: 'online' | 'offline' | 'error' | 'no_key';
     latency: number;
     message: string;
-}
-
-// يزيل أي مسافات/أسطر جديدة من المفتاح — قيم الأسطر الجديدة غير مسموحة في HTTP headers
-function cleanKey(value: string | undefined): string {
-    return (value || '').replace(/\s+/g, '');
 }
 
 async function checkKeyedService(
@@ -24,30 +29,31 @@ async function checkKeyedService(
         const { ok, message } = await check();
         const latency = Date.now() - start;
         return { status: ok ? 'online' : 'error', latency, message };
-    } catch (e: any) {
-        return { status: 'offline', latency: 0, message: e.message };
+    } catch (e) {
+        return { status: 'offline', latency: 0, message: e instanceof Error ? e.message : 'خطأ غير معروف' };
     }
 }
 
-export async function GET() {
+export async function GET(request: NextRequest) {
+    const rateLimited = enforceRateLimit('health', request, { maxRequests: 20, windowMs: 5 * 60 * 1000 });
+    if (rateLimited) return rateLimited;
+
     const [virustotal, urlscan, safebrowsing, urlhaus, abuseipdb] = await Promise.all([
         checkKeyedService('VIRUSTOTAL_API_KEY', async () => {
-            const res = await fetch('https://www.virustotal.com/api/v3/ip_addresses/8.8.8.8', {
+            const res = await fetchWithTimeout('https://www.virustotal.com/api/v3/ip_addresses/8.8.8.8', {
                 headers: { 'x-apikey': cleanKey(process.env.VIRUSTOTAL_API_KEY) },
-                signal: AbortSignal.timeout(8000),
             });
             return { ok: res.ok, message: res.ok ? 'متصل' : `خطأ: ${res.status}` };
         }),
         checkKeyedService('URLSCAN_API_KEY', async () => {
-            const res = await fetch('https://urlscan.io/user/quotas/', {
+            const res = await fetchWithTimeout('https://urlscan.io/user/quotas/', {
                 headers: { 'API-Key': cleanKey(process.env.URLSCAN_API_KEY) },
-                signal: AbortSignal.timeout(8000),
             });
             return { ok: res.ok, message: res.ok ? 'متصل' : `خطأ: ${res.status}` };
         }),
         checkKeyedService('GOOGLE_SAFE_BROWSING_API_KEY', async () => {
-            const res = await fetch(
-                `https://safebrowsing.googleapis.com/v4/threatMatches:find?key=${process.env.GOOGLE_SAFE_BROWSING_API_KEY}`,
+            const res = await fetchWithTimeout(
+                `https://safebrowsing.googleapis.com/v4/threatMatches:find?key=${encodeURIComponent(cleanKey(process.env.GOOGLE_SAFE_BROWSING_API_KEY))}`,
                 {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
@@ -60,7 +66,6 @@ export async function GET() {
                             threatEntries: [{ url: 'https://example.com' }],
                         },
                     }),
-                    signal: AbortSignal.timeout(8000),
                 }
             );
             return { ok: res.ok, message: res.ok ? 'متصل' : `خطأ: ${res.status}` };
@@ -68,18 +73,16 @@ export async function GET() {
         checkKeyedService('URLHAUS_AUTH_KEY', async () => {
             const form = new URLSearchParams();
             form.append('url', 'https://example.com');
-            const res = await fetch('https://urlhaus-api.abuse.ch/v1/url/', {
+            const res = await fetchWithTimeout('https://urlhaus-api.abuse.ch/v1/url/', {
                 method: 'POST',
                 headers: { 'Auth-Key': cleanKey(process.env.URLHAUS_AUTH_KEY), 'Content-Type': 'application/x-www-form-urlencoded' },
                 body: form,
-                signal: AbortSignal.timeout(8000),
             });
             return { ok: res.ok, message: res.ok ? 'متصل' : `خطأ: ${res.status}` };
         }),
         checkKeyedService('ABUSEIPDB_API_KEY', async () => {
-            const res = await fetch('https://api.abuseipdb.com/api/v2/check?ipAddress=8.8.8.8', {
+            const res = await fetchWithTimeout('https://api.abuseipdb.com/api/v2/check?ipAddress=8.8.8.8', {
                 headers: { Key: cleanKey(process.env.ABUSEIPDB_API_KEY), Accept: 'application/json' },
-                signal: AbortSignal.timeout(8000),
             });
             return { ok: res.ok, message: res.ok ? 'متصل' : `خطأ: ${res.status}` };
         }),

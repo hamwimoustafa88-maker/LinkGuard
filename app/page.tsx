@@ -187,7 +187,7 @@ function HomeContent() {
                 unshortenedUrl: targetUrl,
                 verdict: aggregated.verdict,
                 vtStats: vtData?.stats,
-                vtDetails: vtData?.details,
+                vtEngines: vtData?.vtEngines,
                 vtUrlMeta: vtData?.vtUrlMeta,
                 scanId: vtData?.scanId,
                 screenshotUrl: urlscanData?.screenshotUrl,
