@@ -363,26 +363,6 @@ function VerificationSteps({ t }: { t: any }) {
     );
 }
 
-function StatBar({ label, count, color }: { label: string; count: number; color: string }) {
-    return (
-        <div>
-            <div className="flex justify-between mb-1">
-                <span className="text-gray-300">{label}</span>
-                <span style={{ color }} className="font-bold">{count}</span>
-            </div>
-            <div className="h-2 bg-cyber-navy rounded-full overflow-hidden">
-                <motion.div
-                    initial={{ width: 0 }}
-                    animate={{ width: `${Math.min((count / 70) * 100, 100)}%` }}
-                    style={{ backgroundColor: color }}
-                    className="h-full"
-                    transition={{ duration: 0.5, delay: 0.2 }}
-                />
-            </div>
-        </div>
-    );
-}
-
 function InfoRow({ icon: Icon, label, value }: { icon: any; label: string; value: string }) {
     return (
         <div className="flex items-center gap-4 p-4 bg-cyber-navy/50 rounded-xl">

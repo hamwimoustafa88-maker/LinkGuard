@@ -55,11 +55,6 @@ function isPrivateIp(ip: string): boolean {
     return true; // unknown format: fail closed
 }
 
-export interface SafeUrlCheck {
-    ok: boolean;
-    reason?: string;
-}
-
 export async function assertPublicHttpUrl(rawUrl: string): Promise<URL> {
     let url: URL;
     try {
