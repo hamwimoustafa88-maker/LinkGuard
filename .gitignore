@@ -31,3 +31,7 @@ yarn-error.log*
 # typescript
 *.tsbuildinfo
 next-env.d.ts
+
+# local agent/plugin tooling (never part of the app)
+/.agents/
+/.claude/settings.local.json
