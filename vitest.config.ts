@@ -6,6 +6,11 @@ export default defineConfig({
         environment: 'node',
         globals: true,
         include: ['__tests__/**/*.test.ts'],
+        coverage: {
+            provider: 'v8',
+            reporter: ['text', 'lcov'],
+            include: ['lib/**', 'utils/**', 'app/api/**'],
+        },
     },
     resolve: {
         alias: {
