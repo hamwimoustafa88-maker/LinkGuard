@@ -100,7 +100,6 @@ export const translations = {
         linkedin: 'LinkedIn Profile',
 
         // New Features
-        threatsDetected: 'تهديدات تم كشفها اليوم',
         poweredByAI: 'مدعوم بالذكاء الاصطناعي',
         shareWhatsApp: 'مشاركة النتيجة عبر واتساب',
         shareTextSafe: '✅ هذا الرابط آمن بنسبة {score}% وفقاً لفحص LinkGuard',
@@ -268,7 +267,6 @@ export const translations = {
         linkedin: 'LinkedIn Profile',
 
         // New Features
-        threatsDetected: 'Threats Detected Today',
         poweredByAI: 'Powered by AI',
         shareWhatsApp: 'Share Result on WhatsApp',
         shareTextSafe: '✅ This link is {score}% Safe according to LinkGuard scan',

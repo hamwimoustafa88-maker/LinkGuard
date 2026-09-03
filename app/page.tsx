@@ -8,7 +8,6 @@ import StatusTerminal from '@/components/StatusTerminal';
 import VerdictDashboard from '@/components/VerdictDashboard';
 import EducationFooter from '@/components/EducationFooter';
 import LanguageToggle from '@/components/LanguageToggle';
-import ThreatCounter from '@/components/ThreatCounter';
 import ScanHistory from '@/components/ScanHistory';
 import { useLanguage } from '@/components/LanguageContext';
 import { ScanStatus, VerdictType, type ScanResult, type EvidenceItem, type SourceOutcome, type RedirectHop } from '@/types';
@@ -229,8 +228,7 @@ function HomeContent() {
 
             <div className="relative z-10 container mx-auto px-4 py-8 flex-1 flex flex-col">
                 {/* Navbar / Top Bar */}
-                <div className="flex flex-col md:flex-row justify-between items-center mb-8 gap-4">
-                    <ThreatCounter />
+                <div className="flex justify-end items-center mb-8">
                     <LanguageToggle />
                 </div>
 
