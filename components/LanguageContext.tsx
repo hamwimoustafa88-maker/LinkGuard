@@ -49,7 +49,7 @@ export function LanguageProvider({ children }: { children: React.ReactNode }) {
     };
 
     const t = (key: string) => {
-        // @ts-ignore
+        // @ts-expect-error - key is a loosely-typed string here; see the typed-translations follow-up
         return translations[language][key] || key;
     };
 

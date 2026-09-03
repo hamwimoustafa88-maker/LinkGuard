@@ -10,7 +10,7 @@
 
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
 [![PRs Welcome](https://img.shields.io/badge/PRs-welcome-brightgreen.svg)](#-contributing--المساهمة)
-[![Next.js](https://img.shields.io/badge/Next.js-14-000000?logo=next.js&logoColor=white)](https://nextjs.org/)
+[![Next.js](https://img.shields.io/badge/Next.js-16-000000?logo=next.js&logoColor=white)](https://nextjs.org/)
 [![TypeScript](https://img.shields.io/badge/TypeScript-5-3178C6?logo=typescript&logoColor=white)](https://www.typescriptlang.org/)
 [![Tailwind CSS](https://img.shields.io/badge/Tailwind_CSS-3-38B2AC?logo=tailwind-css&logoColor=white)](https://tailwindcss.com/)
 [![Tested with Vitest](https://img.shields.io/badge/Tested_with-Vitest-6E9F18?logo=vitest&logoColor=white)](https://vitest.dev/)
@@ -73,7 +73,7 @@ optional — a missing or failing source simply lowers confidence instead of bre
 
 | Layer | Technology |
 | :--- | :--- |
-| **Framework** | [Next.js 14](https://nextjs.org/) (App Router) — full-stack UI + API routes |
+| **Framework** | [Next.js 16](https://nextjs.org/) (App Router, React 19) — full-stack UI + API routes |
 | **Language** | [TypeScript 5](https://www.typescriptlang.org/) |
 | **Styling** | [Tailwind CSS 3](https://tailwindcss.com/) + [framer-motion](https://www.framer.com/motion/) |
 | **Icons / QR** | [lucide-react](https://lucide.dev/) · [html5-qrcode](https://github.com/mebjas/html5-qrcode) |
@@ -87,7 +87,7 @@ optional — a missing or failing source simply lowers confidence instead of bre
 
 ### Prerequisites · المتطلبات المسبقة
 
-- **Node.js** `18+` (LTS recommended)
+- **Node.js** `20.9+` (LTS recommended)
 - **npm** (ships with Node) — or your preferred package manager
 
 > All threat-intelligence API keys are **optional**. LinkGuard runs out of the box and degrades

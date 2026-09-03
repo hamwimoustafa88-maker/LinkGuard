@@ -44,7 +44,7 @@ for a global audience — assume good intent and keep discussions friendly.
 
 ## 🔧 Development Setup · إعداد بيئة التطوير
 
-**Prerequisites:** Node.js `18+` and npm.
+**Prerequisites:** Node.js `20.9+` and npm.
 
 ```bash
 # Fork, then clone your fork

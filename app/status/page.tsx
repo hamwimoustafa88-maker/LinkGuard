@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
-import { Shield, Server, Activity, ArrowRight, RefreshCw, CheckCircle, XCircle, AlertTriangle } from 'lucide-react';
+import { Shield, Server, Activity, ArrowRight, RefreshCw, CheckCircle, XCircle, AlertTriangle, type LucideIcon } from 'lucide-react';
 import Link from 'next/link';
 
 interface ServiceStatus {
@@ -17,6 +17,72 @@ interface HealthData {
     safebrowsing: ServiceStatus;
     urlhaus: ServiceStatus;
     abuseipdb: ServiceStatus;
+}
+
+function StatusCard({ name, service, icon: Icon }: { name: string; service: ServiceStatus | undefined; icon: LucideIcon }) {
+    if (!service) return null;
+
+    // Config based on status
+    let color = 'text-gray-400';
+    let bg = 'bg-gray-800/30';
+    let border = 'border-gray-700';
+    let StatusIcon = Activity;
+
+    if (service.status === 'online') {
+        color = 'text-emerald-400';
+        bg = 'bg-emerald-900/10';
+        border = 'border-emerald-500/30';
+        StatusIcon = CheckCircle;
+    } else if (service.status === 'no_key') {
+        color = 'text-gray-400';
+        bg = 'bg-gray-800/20';
+        border = 'border-gray-600/30';
+        StatusIcon = AlertTriangle;
+    } else if (service.status === 'error') {
+        color = 'text-yellow-400';
+        bg = 'bg-yellow-900/10';
+        border = 'border-yellow-500/30';
+        StatusIcon = AlertTriangle;
+    } else {
+        color = 'text-red-400';
+        bg = 'bg-red-900/10';
+        border = 'border-red-500/30';
+        StatusIcon = XCircle;
+    }
+
+    return (
+        <motion.div
+            initial={{ opacity: 0, y: 10 }}
+            animate={{ opacity: 1, y: 0 }}
+            className={`flex items-center justify-between p-6 rounded-2xl glass-effect border ${border} hover:border-opacity-100 transition-all`}
+        >
+            <div className="flex items-center gap-4">
+                <div className={`w-12 h-12 rounded-xl flex items-center justify-center ${bg}`}>
+                    <Icon className={`w-6 h-6 ${color}`} />
+                </div>
+                <div>
+                    <h3 className="text-xl font-bold text-gray-200">{name}</h3>
+                    <div className="flex items-center gap-2 mt-1">
+                        <span className={`text-sm ${color} font-bold`}>
+                            {service.status === 'online' ? 'متصل' : service.status === 'no_key' ? 'مفتاح غير مضبوط (اختياري)' : service.status === 'error' ? 'خطأ' : 'غير متصل'}
+                        </span>
+                        {service.latency > 0 && (
+                            <span className="text-xs text-gray-500 font-mono">
+                                ({service.latency}ms)
+                            </span>
+                        )}
+                    </div>
+                </div>
+            </div>
+
+            <div className="text-left">
+                <StatusIcon className={`w-6 h-6 ${color} opacity-80`} />
+                {service.message && service.message !== 'متصل' && (
+                    <p className="text-xs text-gray-400 mt-2 max-w-[150px]">{service.message}</p>
+                )}
+            </div>
+        </motion.div>
+    );
 }
 
 export default function StatusPage() {
@@ -41,72 +107,6 @@ export default function StatusPage() {
     useEffect(() => {
         checkSystem();
     }, []);
-
-    const StatusCard = ({ name, service, icon: Icon }: { name: string, service: ServiceStatus | undefined, icon: any }) => {
-        if (!service) return null;
-
-        // Config based on status
-        let color = 'text-gray-400';
-        let bg = 'bg-gray-800/30';
-        let border = 'border-gray-700';
-        let StatusIcon = Activity;
-
-        if (service.status === 'online') {
-            color = 'text-emerald-400';
-            bg = 'bg-emerald-900/10';
-            border = 'border-emerald-500/30';
-            StatusIcon = CheckCircle;
-        } else if (service.status === 'no_key') {
-            color = 'text-gray-400';
-            bg = 'bg-gray-800/20';
-            border = 'border-gray-600/30';
-            StatusIcon = AlertTriangle;
-        } else if (service.status === 'error') {
-            color = 'text-yellow-400';
-            bg = 'bg-yellow-900/10';
-            border = 'border-yellow-500/30';
-            StatusIcon = AlertTriangle;
-        } else {
-            color = 'text-red-400';
-            bg = 'bg-red-900/10';
-            border = 'border-red-500/30';
-            StatusIcon = XCircle;
-        }
-
-        return (
-            <motion.div
-                initial={{ opacity: 0, y: 10 }}
-                animate={{ opacity: 1, y: 0 }}
-                className={`flex items-center justify-between p-6 rounded-2xl glass-effect border ${border} hover:border-opacity-100 transition-all`}
-            >
-                <div className="flex items-center gap-4">
-                    <div className={`w-12 h-12 rounded-xl flex items-center justify-center ${bg}`}>
-                        <Icon className={`w-6 h-6 ${color}`} />
-                    </div>
-                    <div>
-                        <h3 className="text-xl font-bold text-gray-200">{name}</h3>
-                        <div className="flex items-center gap-2 mt-1">
-                            <span className={`text-sm ${color} font-bold`}>
-                                {service.status === 'online' ? 'متصل' : service.status === 'no_key' ? 'مفتاح غير مضبوط (اختياري)' : service.status === 'error' ? 'خطأ' : 'غير متصل'}
-                            </span>
-                            {service.latency > 0 && (
-                                <span className="text-xs text-gray-500 font-mono">
-                                    ({service.latency}ms)
-                                </span>
-                            )}
-                        </div>
-                    </div>
-                </div>
-
-                <div className="text-left">
-                    <StatusIcon className={`w-6 h-6 ${color} opacity-80`} />
-                    {service.message && service.message !== 'متصل' && (
-                        <p className="text-xs text-gray-400 mt-2 max-w-[150px]">{service.message}</p>
-                    )}
-                </div>
-            </motion.div>
-        );
-    };
 
     return (
         <main className="min-h-screen relative overflow-hidden bg-cyber-dark text-white p-8">

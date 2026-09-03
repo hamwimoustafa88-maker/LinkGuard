@@ -64,10 +64,14 @@ function checkSsl(hostname: string): Promise<{ status: 'ok' | 'skipped' | 'error
                     const validTo = cert.valid_to;
                     const daysUntilExpiry = Math.floor((new Date(validTo).getTime() - Date.now()) / (1000 * 60 * 60 * 24));
 
+                    // DN fields (O, CN) are technically multi-valued in the X.509 encoding,
+                    // so newer @types/node types them as string | string[].
+                    const dnField = (v: string | string[] | undefined) => (Array.isArray(v) ? v[0] : v);
+
                     resolve({
                         status: 'ok',
                         info: {
-                            issuer: cert.issuer?.O || cert.issuer?.CN,
+                            issuer: dnField(cert.issuer?.O) || dnField(cert.issuer?.CN),
                             validFrom: cert.valid_from,
                             validTo,
                             daysUntilExpiry,

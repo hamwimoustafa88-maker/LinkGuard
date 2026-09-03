@@ -17,20 +17,6 @@ export default function QrScannerModal({ isOpen, onClose, onScanSuccess }: QrSca
     const scannerRef = useRef<Html5Qrcode | null>(null);
     const hasStartedRef = useRef(false);
 
-    useEffect(() => {
-        if (isOpen && !hasStartedRef.current) {
-            startScanner();
-            hasStartedRef.current = true;
-        }
-
-        return () => {
-            if (hasStartedRef.current) {
-                stopScanner();
-                hasStartedRef.current = false;
-            }
-        };
-    }, [isOpen]);
-
     const startScanner = async () => {
         try {
             setError(null);
@@ -101,6 +87,21 @@ export default function QrScannerModal({ isOpen, onClose, onScanSuccess }: QrSca
         setError(null);
         onClose();
     };
+
+    useEffect(() => {
+        if (isOpen && !hasStartedRef.current) {
+            startScanner();
+            hasStartedRef.current = true;
+        }
+
+        return () => {
+            if (hasStartedRef.current) {
+                stopScanner();
+                hasStartedRef.current = false;
+            }
+        };
+        // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, [isOpen]);
 
     return (
         <AnimatePresence>
