@@ -12,7 +12,7 @@
 [![PRs Welcome](https://img.shields.io/badge/PRs-welcome-brightgreen.svg)](#-contributing--المساهمة)
 [![Next.js](https://img.shields.io/badge/Next.js-16-000000?logo=next.js&logoColor=white)](https://nextjs.org/)
 [![TypeScript](https://img.shields.io/badge/TypeScript-5-3178C6?logo=typescript&logoColor=white)](https://www.typescriptlang.org/)
-[![Tailwind CSS](https://img.shields.io/badge/Tailwind_CSS-3-38B2AC?logo=tailwind-css&logoColor=white)](https://tailwindcss.com/)
+[![Tailwind CSS](https://img.shields.io/badge/Tailwind_CSS-4-38B2AC?logo=tailwind-css&logoColor=white)](https://tailwindcss.com/)
 [![Tested with Vitest](https://img.shields.io/badge/Tested_with-Vitest-6E9F18?logo=vitest&logoColor=white)](https://vitest.dev/)
 [![PWA Ready](https://img.shields.io/badge/PWA-installable-5A0FC8?logo=pwa&logoColor=white)](#-key-features--المميزات-الرئيسية)
 
@@ -75,7 +75,7 @@ optional — a missing or failing source simply lowers confidence instead of bre
 | :--- | :--- |
 | **Framework** | [Next.js 16](https://nextjs.org/) (App Router, React 19) — full-stack UI + API routes |
 | **Language** | [TypeScript 5](https://www.typescriptlang.org/) |
-| **Styling** | [Tailwind CSS 3](https://tailwindcss.com/) + [framer-motion](https://www.framer.com/motion/) |
+| **Styling** | [Tailwind CSS 4](https://tailwindcss.com/) + [framer-motion](https://www.framer.com/motion/) |
 | **Icons / QR** | [lucide-react](https://lucide.dev/) · [html5-qrcode](https://github.com/mebjas/html5-qrcode) |
 | **Domain parsing** | [tldts](https://github.com/remusao/tldts) |
 | **Testing** | [Vitest](https://vitest.dev/) + `@vitest/coverage-v8`, CI via GitHub Actions |
