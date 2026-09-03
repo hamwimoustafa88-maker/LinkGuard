@@ -78,7 +78,7 @@ function StatusCard({ name, service, icon: Icon }: { name: string; service: Serv
             <div className="text-left">
                 <StatusIcon className={`w-6 h-6 ${color} opacity-80`} />
                 {service.message && service.message !== 'متصل' && (
-                    <p className="text-xs text-gray-400 mt-2 max-w-[150px]">{service.message}</p>
+                    <p className="text-xs text-gray-400 mt-2 max-w-37.5">{service.message}</p>
                 )}
             </div>
         </motion.div>

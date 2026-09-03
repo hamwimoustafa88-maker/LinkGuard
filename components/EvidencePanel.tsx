@@ -1,16 +1,8 @@
 'use client';
 
-import { AlertTriangle, ShieldAlert, Info } from 'lucide-react';
-import type { AggregatedVerdict, EvidenceSeverity } from '@/types';
+import type { AggregatedVerdict } from '@/types';
+import { severityTheme } from '@/lib/verdictTheme';
 import { useLanguage } from './LanguageContext';
-
-const severityStyle: Record<EvidenceSeverity, { color: string; icon: any }> = {
-    critical: { color: 'text-cyber-danger', icon: ShieldAlert },
-    high: { color: 'text-cyber-danger', icon: AlertTriangle },
-    medium: { color: 'text-cyber-warning', icon: AlertTriangle },
-    low: { color: 'text-yellow-400', icon: Info },
-    info: { color: 'text-gray-400', icon: Info },
-};
 
 function interpolate(template: string, params?: Record<string, string | number>): string {
     if (!params) return template;
@@ -48,12 +40,12 @@ export default function EvidencePanel({ riskScore }: EvidencePanelProps) {
             ) : (
                 <div className="space-y-2">
                     {riskScore.evidence.map((item, i) => {
-                        const style = severityStyle[item.severity];
+                        const style = severityTheme[item.severity];
                         const Icon = style.icon;
                         const text = t(`evidence_${item.id}`);
                         return (
                             <div key={i} className="flex items-start gap-3 p-3 bg-cyber-navy/30 rounded-xl">
-                                <Icon className={`w-5 h-5 mt-0.5 shrink-0 ${style.color}`} />
+                                <Icon className={`w-5 h-5 mt-0.5 shrink-0 ${style.colorClass}`} />
                                 <p className="text-gray-200 text-sm leading-relaxed">{interpolate(text, item.params)}</p>
                             </div>
                         );

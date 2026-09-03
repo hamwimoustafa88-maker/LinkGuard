@@ -3,16 +3,9 @@
 import { useEffect, useState } from 'react';
 import { motion } from 'framer-motion';
 import { History, Trash2, RotateCcw } from 'lucide-react';
-import { VerdictType } from '@/types';
 import { getHistory, clearHistory, type HistoryEntry } from '@/utils/history';
+import { verdictTheme } from '@/lib/verdictTheme';
 import { useLanguage } from './LanguageContext';
-
-const verdictColor: Record<VerdictType, string> = {
-    [VerdictType.SAFE]: 'text-cyber-safe',
-    [VerdictType.WARNING]: 'text-cyber-warning',
-    [VerdictType.DANGER]: 'text-cyber-danger',
-    [VerdictType.UNKNOWN]: 'text-gray-400',
-};
 
 interface ScanHistoryProps {
     onRescan: (url: string) => void;
@@ -59,7 +52,7 @@ export default function ScanHistory({ onRescan }: ScanHistoryProps) {
                                 <p className="text-white text-sm font-mono truncate" dir="ltr">{entry.finalUrl}</p>
                                 <p className="text-xs text-gray-500">{new Date(entry.timestamp).toLocaleString()}</p>
                             </div>
-                            <span className={`text-xs font-bold shrink-0 ${verdictColor[entry.verdict]}`}>{entry.score}</span>
+                            <span className={`text-xs font-bold shrink-0 ${verdictTheme[entry.verdict].textColorClass}`}>{entry.score}</span>
                             <button
                                 onClick={() => onRescan(entry.url)}
                                 className="p-2 rounded-lg hover:bg-cyber-safe/10 text-cyber-safe shrink-0"

@@ -3,7 +3,8 @@
 import { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
 import { VerdictType, type ScanResult } from '@/types';
-import { ShieldCheck, ShieldAlert, AlertTriangle, Globe, Server, Flag, Share2, Download, Copy, ExternalLink, Clock, Check } from 'lucide-react';
+import { AlertTriangle, Globe, Server, Flag, Share2, Download, Copy, ExternalLink, Clock, Check, ShieldCheck } from 'lucide-react';
+import { verdictTheme } from '@/lib/verdictTheme';
 import SandboxWindow from '@/components/SandboxWindow';
 import PhishingAlertCard from '@/components/PhishingAlertCard';
 import EvidencePanel from '@/components/EvidencePanel';
@@ -27,43 +28,8 @@ export default function VerdictDashboard({ result }: VerdictDashboardProps) {
         setCurrentTime(new Date().toLocaleString());
     }, []);
 
-    const verdictConfig = {
-        [VerdictType.SAFE]: {
-            icon: ShieldCheck,
-            text: t('verdictSafe'),
-            subtext: t('verdictSafeSub'),
-            colorClass: 'text-cyber-safe border-cyber-safe',
-            bgColor: '#00ff88',
-            glowClass: 'neon-glow-safe',
-        },
-        [VerdictType.WARNING]: {
-            icon: AlertTriangle,
-            text: t('verdictWarning'),
-            subtext: t('verdictWarningSub'),
-            colorClass: 'text-cyber-warning border-cyber-warning',
-            bgColor: '#ffaa00',
-            glowClass: 'neon-glow-warning',
-        },
-        [VerdictType.DANGER]: {
-            icon: ShieldAlert,
-            text: t('verdictDanger'),
-            subtext: t('verdictDangerSub'),
-            colorClass: 'text-cyber-danger border-cyber-danger',
-            bgColor: '#ff0055',
-            glowClass: 'neon-glow-danger',
-        },
-        [VerdictType.UNKNOWN]: {
-            icon: AlertTriangle,
-            text: t('verdictUnknown'),
-            subtext: t('verdictUnknownSub'),
-            colorClass: 'text-gray-400 border-gray-400',
-            bgColor: '#9ca3af',
-            glowClass: '',
-        },
-    };
-
-    const config = verdictConfig[verdict];
-    const Icon = config.icon;
+    const theme = verdictTheme[verdict];
+    const Icon = theme.icon;
     const totalVendors = vtStats ? Object.values(vtStats).reduce((a, b) => a + b, 0) : 0;
     const threatCount = vtStats ? vtStats.malicious + vtStats.suspicious : 0;
     const harmlessCount = vtStats ? vtStats.harmless + vtStats.undetected : 0;
@@ -98,7 +64,7 @@ export default function VerdictDashboard({ result }: VerdictDashboardProps) {
             )}
 
             {/* Main Verdict Card */}
-            <div className={`glass-effect rounded-3xl p-10 mb-8 border-4 ${config.colorClass} ${config.glowClass} relative overflow-hidden`}>
+            <div className={`glass-effect rounded-3xl p-10 mb-8 border-4 ${theme.colorClass} ${theme.glowClass} relative overflow-hidden`}>
                 <div className="absolute inset-0 bg-linear-to-b from-transparent to-black/20 pointer-events-none" />
 
                 {/* Export / Download PDF Button */}
@@ -111,9 +77,9 @@ export default function VerdictDashboard({ result }: VerdictDashboardProps) {
                     <span className="hidden sm:inline text-sm font-bold">{t('exportReport')}</span>
                 </button>
                 <div className="text-center relative z-10">
-                    <Icon className={`w-24 h-24 mx-auto mb-6 ${config.colorClass.split(' ')[0]}`} />
-                    <h2 className={`text-6xl font-bold mb-3 ${config.colorClass.split(' ')[0]}`}>{config.text}</h2>
-                    <p className="text-2xl text-gray-300">{config.subtext}</p>
+                    <Icon className={`w-24 h-24 mx-auto mb-6 ${theme.textColorClass}`} />
+                    <h2 className={`text-6xl font-bold mb-3 ${theme.textColorClass}`}>{t(theme.textKey)}</h2>
+                    <p className="text-2xl text-gray-300">{t(theme.subtextKey)}</p>
 
                     {totalVendors === 0 && (
                         <div className="mt-4 p-3 bg-yellow-900/30 border border-yellow-500/30 rounded-lg inline-block">
@@ -208,7 +174,7 @@ export default function VerdictDashboard({ result }: VerdictDashboardProps) {
                                 <motion.circle
                                     cx="18" cy="18" r="15.915"
                                     fill="transparent"
-                                    stroke={config.bgColor}
+                                    stroke={theme.hex}
                                     strokeWidth="3.5"
                                     strokeDasharray={totalVendors > 0 ? "0 100" : "100 0"}
                                     animate={{ strokeDasharray: totalVendors > 0 ? `${(harmlessCount / totalVendors) * 100} ${100 - ((harmlessCount / totalVendors) * 100)}` : "100 0" }}
@@ -217,7 +183,7 @@ export default function VerdictDashboard({ result }: VerdictDashboardProps) {
                                 />
                             </svg>
                             <div className="absolute inset-0 flex flex-col items-center justify-center text-center">
-                                <span className="text-5xl font-bold font-mono" style={{ color: config.bgColor }}>{threatCount}</span>
+                                <span className="text-5xl font-bold font-mono" style={{ color: theme.hex }}>{threatCount}</span>
                                 <span className="text-gray-500 font-bold border-t border-gray-700 mt-1 pt-1 min-w-12">/ {totalVendors}</span>
                             </div>
                         </div>
