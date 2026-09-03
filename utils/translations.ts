@@ -1,8 +1,11 @@
 export type Language = 'ar' | 'en';
 export type Direction = 'rtl' | 'ltr';
 
-export const translations = {
-    ar: {
+// `ar` is the source of truth for which keys exist; `en` (below) is typed
+// against it, so a key present in one language but not the other is a
+// build error instead of a key silently falling through to English/Arabic
+// at runtime (see components/LanguageContext.tsx's t()).
+const ar = {
         // Meta
         appTitle: 'LinkGuard',
         appSubtitle: 'كاشف الروابط الخبيثة',
@@ -18,7 +21,6 @@ export const translations = {
         footerCopy: '© 2026 LinkGuard - كاشف الروابط | حماية متقدمة ضد التهديدات الإلكترونية',
 
         // Status
-        statusIdle: '',
         statusUnshortening: 'جاري فك اختصار الرابط...',
         statusScanning: 'الاتصال بقواعد البيانات الأمنية...',
         statusAnalyzing: 'تحليل التهديدات المحتملة...',
@@ -169,8 +171,11 @@ export const translations = {
         installLater: 'لاحقاً',
         installIosStep1: 'اضغط زر المشاركة',
         installIosStep2: 'ثم اختر "إضافة إلى الشاشة الرئيسية"',
-    },
-    en: {
+} as const;
+
+export type TranslationKey = keyof typeof ar;
+
+const en: Record<TranslationKey, string> = {
         // Meta
         appTitle: 'LinkGuard',
         appSubtitle: 'Malicious Link Detector',
@@ -186,7 +191,6 @@ export const translations = {
         footerCopy: '© 2026 LinkGuard - Link Detector | Advanced protection against cyber threats',
 
         // Status
-        statusIdle: '',
         statusUnshortening: 'Unshortening URL...',
         statusScanning: 'Connecting to security databases...',
         statusAnalyzing: 'Analyzing potential threats...',
@@ -337,5 +341,6 @@ export const translations = {
         installLater: 'Later',
         installIosStep1: 'Tap the Share button',
         installIosStep2: 'Then choose "Add to Home Screen"',
-    }
 };
+
+export const translations: Record<Language, Record<TranslationKey, string>> = { ar, en };

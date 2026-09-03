@@ -1,13 +1,15 @@
 'use client';
 
 import React, { createContext, useContext, useState, useEffect } from 'react';
-import { translations, Language, Direction } from '@/utils/translations';
+import { translations, Language, Direction, type TranslationKey } from '@/utils/translations';
+
+export type TFunction = (key: TranslationKey, params?: Record<string, string | number>) => string;
 
 interface LanguageContextType {
     language: Language;
     direction: Direction;
     setLanguage: (lang: Language) => void;
-    t: (key: string) => string;
+    t: TFunction;
     toggleLanguage: () => void;
 }
 
@@ -46,9 +48,13 @@ export function LanguageProvider({ children }: { children: React.ReactNode }) {
         setLanguage(language === 'ar' ? 'en' : 'ar');
     };
 
-    const t = (key: string) => {
-        // @ts-expect-error - key is a loosely-typed string here; see the typed-translations follow-up
-        return translations[language][key] || key;
+    const t: TFunction = (key, params) => {
+        const template = translations[language][key] || key;
+        if (!params) return template;
+        return Object.entries(params).reduce(
+            (acc, [name, value]) => acc.split(`{${name}}`).join(String(value)),
+            template
+        );
     };
 
     // Fix: Always render the Provider, even during SSR/Pre-rendering. 

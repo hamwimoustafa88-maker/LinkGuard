@@ -6,6 +6,7 @@
 
 import { VerdictType, type EvidenceSeverity } from '@/types';
 import { ShieldCheck, ShieldAlert, AlertTriangle, Info, type LucideIcon } from 'lucide-react';
+import type { TranslationKey } from '@/utils/translations';
 
 export interface VerdictThemeEntry {
     icon: LucideIcon;
@@ -15,8 +16,8 @@ export interface VerdictThemeEntry {
     textColorClass: string;
     hex: string;
     glowClass: string;
-    textKey: string;
-    subtextKey: string;
+    textKey: TranslationKey;
+    subtextKey: TranslationKey;
 }
 
 export const verdictTheme: Record<VerdictType, VerdictThemeEntry> = {

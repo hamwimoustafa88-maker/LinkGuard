@@ -31,8 +31,10 @@ async function fetchDomainAge(registrableDomain: string): Promise<{ status: 'ok'
 
         const createdAt = registration.eventDate;
         const ageDays = Math.floor((Date.now() - new Date(createdAt).getTime()) / (1000 * 60 * 60 * 24));
-        const registrarEntity = (data.entities || []).find((e: any) => (e.roles || []).includes('registrar'));
-        const registrar = registrarEntity?.vcardArray?.[1]?.find((f: any) => f[0] === 'fn')?.[3];
+        const entities: { roles?: string[]; vcardArray?: [string, unknown[]] }[] = data.entities || [];
+        const registrarEntity = entities.find((e) => (e.roles || []).includes('registrar'));
+        const vcardFields = registrarEntity?.vcardArray?.[1] as unknown[][] | undefined;
+        const registrar = vcardFields?.find((f) => f[0] === 'fn')?.[3] as string | undefined;
 
         return { status: 'ok', info: { ageDays, createdAt, registrar } };
     } catch {

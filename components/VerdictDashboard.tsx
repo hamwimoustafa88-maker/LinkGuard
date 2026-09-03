@@ -1,9 +1,9 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState } from 'react';
 import { motion } from 'framer-motion';
 import { VerdictType, type ScanResult } from '@/types';
-import { AlertTriangle, Globe, Server, Flag, Share2, Download, Copy, ExternalLink, Clock, Check, ShieldCheck } from 'lucide-react';
+import { AlertTriangle, Globe, Server, Flag, Share2, Download, Copy, ExternalLink, Clock, Check, ShieldCheck, type LucideIcon } from 'lucide-react';
 import { verdictTheme } from '@/lib/verdictTheme';
 import SandboxWindow from '@/components/SandboxWindow';
 import PhishingAlertCard from '@/components/PhishingAlertCard';
@@ -11,7 +11,7 @@ import EvidencePanel from '@/components/EvidencePanel';
 import RiskScoreGauge from '@/components/RiskScoreGauge';
 import RedirectChain from '@/components/RedirectChain';
 import DomainInfoCard from '@/components/DomainInfoCard';
-import { useLanguage } from './LanguageContext';
+import { useLanguage, type TFunction } from './LanguageContext';
 
 interface VerdictDashboardProps {
     result: ScanResult;
@@ -21,12 +21,11 @@ export default function VerdictDashboard({ result }: VerdictDashboardProps) {
     const { t } = useLanguage();
     const { verdict, vtStats, screenshotUrl, networkInfo, unshortenedUrl, vtEngines, vtUrlMeta, riskScore, redirectChain, domainInfo, sslInfo } = result;
     const [copied, setCopied] = useState(false);
-    const [currentTime, setCurrentTime] = useState('');
-
-    useEffect(() => {
-        // Set time on client safely to avoid hydration mismatch
-        setCurrentTime(new Date().toLocaleString());
-    }, []);
+    // Computed directly rather than via a mount effect+state: this component
+    // only ever renders after a scan completes (never during the initial
+    // server-rendered pass, since scanResult starts at IDLE), so there is no
+    // server/client markup to reconcile here.
+    const currentTime = new Date().toLocaleString();
 
     const theme = verdictTheme[verdict];
     const Icon = theme.icon;
@@ -41,7 +40,7 @@ export default function VerdictDashboard({ result }: VerdictDashboardProps) {
     const handleShare = () => {
         const text = verdict === VerdictType.DANGER
             ? t('shareTextDanger')
-            : t('shareTextSafe').replace('{score}', safetyScore.toString());
+            : t('shareTextSafe', { score: safetyScore });
 
         // Assuming current URL handles ?url= parameter, we share the app processing the same URL
         const shareUrl = `${window.location.host}/?url=${encodeURIComponent(unshortenedUrl || '')}`;
@@ -190,7 +189,7 @@ export default function VerdictDashboard({ result }: VerdictDashboardProps) {
 
                         <h4 className="text-gray-200 text-lg font-bold mb-2 text-center">{t('threatMeter')}</h4>
                         <p className="text-gray-500 text-center max-w-sm text-sm leading-relaxed">
-                            {t('vendorsFlagged').replace('{threats}', threatCount.toString()).replace('{total}', totalVendors.toString())}
+                            {t('vendorsFlagged', { threats: threatCount, total: totalVendors })}
                         </p>
                     </div>
                 </div>
@@ -309,7 +308,7 @@ export default function VerdictDashboard({ result }: VerdictDashboardProps) {
     );
 }
 
-function VerificationSteps({ t }: { t: any }) {
+function VerificationSteps({ t }: { t: TFunction }) {
     const steps = [
         { id: 1, label: t('stepUnshorten'), status: 'done' },
         { id: 2, label: t('stepVirusScan'), status: 'done' },
@@ -334,7 +333,7 @@ function VerificationSteps({ t }: { t: any }) {
     );
 }
 
-function InfoRow({ icon: Icon, label, value }: { icon: any; label: string; value: string }) {
+function InfoRow({ icon: Icon, label, value }: { icon: LucideIcon; label: string; value: string }) {
     return (
         <div className="flex items-center gap-4 p-4 bg-cyber-navy/50 rounded-xl">
             <Icon className="w-6 h-6 text-cyber-glow" />

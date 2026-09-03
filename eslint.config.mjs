@@ -10,17 +10,17 @@ const config = [
     ...nextTypescript,
     {
         rules: {
-            // Not yet flipped to 'error' - the codebase still has a handful of
-            // any's left to remove in the follow-up typing pass.
-            '@typescript-eslint/no-explicit-any': 'warn',
-            '@typescript-eslint/no-unused-vars': 'warn',
-            // eslint-config-next 16 ships React Compiler readiness rules as
-            // errors. A few components genuinely call setState from a mount
-            // effect (data fetch on load) - real findings, tracked for the
-            // upcoming refactor (page.tsx's handleScan extraction, and
-            // ScanHistory/status page effect cleanup) rather than fixed here.
+            '@typescript-eslint/no-explicit-any': 'error',
+            '@typescript-eslint/no-unused-vars': 'error',
+            // Three components genuinely call setState from a mount effect to
+            // read an environment-only value (localStorage, matchMedia, user
+            // agent, or an initial data fetch) that isn't available during
+            // SSR - LanguageContext.tsx, InstallPrompt.tsx, app/status/page.tsx.
+            // Left at 'warn' rather than restructured: React's own suggested
+            // alternative (deriving state during render) isn't available for
+            // any of these three, since none of the values can be computed
+            // synchronously on the server.
             'react-hooks/set-state-in-effect': 'warn',
-            'react-hooks/immutability': 'warn',
         },
     },
 ];

@@ -38,24 +38,26 @@ export default function QrScannerModal({ isOpen, onClose, onScanSuccess }: QrSca
                     // Success callback
                     handleScanSuccess(decodedText);
                 },
-                (errorMessage) => {
-                    // Error callback (called frequently, we can ignore)
+                () => {
+                    // Error callback (called frequently while no code is in frame — ignore)
                 }
             );
 
             setIsScanning(true);
-        } catch (err: any) {
+        } catch (err: unknown) {
+            const name = err instanceof Error ? err.name : undefined;
+            const message = err instanceof Error ? err.message : undefined;
             let errorMessage = 'فشل الوصول إلى الكاميرا.';
 
             // Handle specific errors
-            if (err.name === 'NotAllowedError' || err.name === 'PermissionDeniedError' || err.message?.includes('permission')) {
+            if (name === 'NotAllowedError' || name === 'PermissionDeniedError' || message?.includes('permission')) {
                 errorMessage = 'تم رفض الوصول للكاميرا. يرجى السماح للموقع باستخدام الكاميرا.';
-            } else if (err.name === 'NotFoundError' || err.message?.includes('device')) {
+            } else if (name === 'NotFoundError' || message?.includes('device')) {
                 errorMessage = 'لم يتم العثور على كاميرا في جهازك.';
-            } else if (err.message?.includes('secure context') || err.message?.includes('SSL')) {
+            } else if (message?.includes('secure context') || message?.includes('SSL')) {
                 errorMessage = 'الكاميرا تتطلب اتصال آمن (HTTPS).';
-            } else if (err.message) {
-                errorMessage = `خطأ في الكاميرا: ${err.message}`;
+            } else if (message) {
+                errorMessage = `خطأ في الكاميرا: ${message}`;
             }
 
             setError(errorMessage);

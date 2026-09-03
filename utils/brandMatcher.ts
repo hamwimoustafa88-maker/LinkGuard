@@ -77,7 +77,6 @@ function safeUrl(url: string): URL | null {
 function isHomograph(hostname: string): boolean {
     const labels = hostname.split('.');
     if (labels.some(l => l.startsWith('xn--'))) return true;
-    // eslint-disable-next-line no-control-regex
     return /[^\x00-\x7F]/.test(hostname);
 }
 

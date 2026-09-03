@@ -1,9 +1,9 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import { useSyncExternalStore } from 'react';
 import { motion } from 'framer-motion';
 import { History, Trash2, RotateCcw } from 'lucide-react';
-import { getHistory, clearHistory, type HistoryEntry } from '@/utils/history';
+import { subscribe, getSnapshot, getServerSnapshot, clearHistory } from '@/utils/history';
 import { verdictTheme } from '@/lib/verdictTheme';
 import { useLanguage } from './LanguageContext';
 
@@ -13,11 +13,10 @@ interface ScanHistoryProps {
 
 export default function ScanHistory({ onRescan }: ScanHistoryProps) {
     const { t } = useLanguage();
-    const [entries, setEntries] = useState<HistoryEntry[]>([]);
-
-    useEffect(() => {
-        setEntries(getHistory());
-    }, []);
+    // Subscribes directly to the localStorage-backed store instead of
+    // snapshotting it once on mount - a scan completed in the same session
+    // now shows up here immediately, and other tabs stay in sync too.
+    const entries = useSyncExternalStore(subscribe, getSnapshot, getServerSnapshot);
 
     if (entries.length === 0) return null;
 
@@ -34,10 +33,7 @@ export default function ScanHistory({ onRescan }: ScanHistoryProps) {
                         {t('historyTitle')}
                     </h3>
                     <button
-                        onClick={() => {
-                            clearHistory();
-                            setEntries([]);
-                        }}
+                        onClick={clearHistory}
                         className="text-gray-400 hover:text-cyber-danger transition-colors flex items-center gap-1 text-sm"
                     >
                         <Trash2 className="w-4 h-4" />

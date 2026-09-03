@@ -5,7 +5,7 @@ const lookupMock = vi.fn();
 vi.mock('dns', () => ({
     default: {
         promises: {
-            lookup: (...args: any[]) => lookupMock(...args),
+            lookup: (...args: unknown[]) => lookupMock(...args),
         },
     },
 }));

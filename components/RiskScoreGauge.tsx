@@ -5,8 +5,9 @@ import type { AggregatedVerdict, ConfidenceLevel } from '@/types';
 import { DANGER_THRESHOLD, WARNING_THRESHOLD } from '@/utils/scoring';
 import { colorForScore } from '@/lib/verdictTheme';
 import { useLanguage } from './LanguageContext';
+import type { TranslationKey } from '@/utils/translations';
 
-const confidenceKey: Record<ConfidenceLevel, string> = {
+const confidenceKey: Record<ConfidenceLevel, TranslationKey> = {
     high: 'confidenceHigh',
     medium: 'confidenceMedium',
     low: 'confidenceLow',

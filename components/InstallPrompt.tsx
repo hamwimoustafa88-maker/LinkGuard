@@ -13,10 +13,16 @@ interface BeforeInstallPromptEvent extends Event {
     userChoice: Promise<{ outcome: 'accepted' | 'dismissed' }>;
 }
 
+// `navigator.standalone` is a non-standard iOS Safari property, not in the
+// DOM lib types.
+interface NavigatorWithStandalone extends Navigator {
+    standalone?: boolean;
+}
+
 function isStandalone(): boolean {
     return (
         window.matchMedia?.('(display-mode: standalone)').matches ||
-        (window.navigator as any).standalone === true
+        (window.navigator as NavigatorWithStandalone).standalone === true
     );
 }
 

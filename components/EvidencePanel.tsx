@@ -3,14 +3,7 @@
 import type { AggregatedVerdict } from '@/types';
 import { severityTheme } from '@/lib/verdictTheme';
 import { useLanguage } from './LanguageContext';
-
-function interpolate(template: string, params?: Record<string, string | number>): string {
-    if (!params) return template;
-    return Object.entries(params).reduce(
-        (acc, [key, value]) => acc.split(`{${key}}`).join(String(value)),
-        template
-    );
-}
+import type { TranslationKey } from '@/utils/translations';
 
 interface EvidencePanelProps {
     riskScore: AggregatedVerdict;
@@ -42,11 +35,15 @@ export default function EvidencePanel({ riskScore }: EvidencePanelProps) {
                     {riskScore.evidence.map((item, i) => {
                         const style = severityTheme[item.severity];
                         const Icon = style.icon;
-                        const text = t(`evidence_${item.id}`);
+                        // Every EvidenceItem.id has a matching `evidence_${id}` key by
+                        // convention (see utils/translations.ts) - not statically provable
+                        // from `id: string`, so asserted here rather than widening t()'s
+                        // key type for this one dynamic-lookup call site.
+                        const text = t(`evidence_${item.id}` as TranslationKey, item.params);
                         return (
                             <div key={i} className="flex items-start gap-3 p-3 bg-cyber-navy/30 rounded-xl">
                                 <Icon className={`w-5 h-5 mt-0.5 shrink-0 ${style.colorClass}`} />
-                                <p className="text-gray-200 text-sm leading-relaxed">{interpolate(text, item.params)}</p>
+                                <p className="text-gray-200 text-sm leading-relaxed">{text}</p>
                             </div>
                         );
                     })}
