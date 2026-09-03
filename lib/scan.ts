@@ -4,6 +4,7 @@
 // function is injected) so it's directly unit-testable without a DOM.
 
 import { ScanStatus, VerdictType, type ScanResult, type EvidenceItem, type SourceOutcome, type RedirectHop, type VTStats, type DomainInfo, type SslInfo } from '@/types';
+import type { ErrorCode } from '@/types/api';
 import { analyzeBrandMismatch, analyzeUrlHeuristics } from '@/utils/brandMatcher';
 import { aggregateVerdict, scoreVirusTotal, scoreSafeBrowsing, scoreBlocklists, scoreDomainAge, scoreSsl, scoreRedirects, type BlocklistsResult } from '@/utils/scoring';
 
@@ -11,8 +12,15 @@ export type PostFn = (url: string, body: unknown) => Promise<Record<string, unkn
 
 export interface RunScanOptions {
     post: PostFn;
-    /** Shown when a step fails without its own message (e.g. a network error). */
+    /** Shown when a step fails without its own message (e.g. a network error,
+     * or a failure response carrying no recognized `code`). */
     fallbackErrorMessage: string;
+    /** Maps a failed response's machine-readable ErrorCode (see types/api.ts)
+     * to a localized message. Without this, a failure falls back to the raw
+     * (always-Arabic) `error` string the API returned, regardless of the
+     * user's selected UI language - callers that care about localized
+     * errors (the useScan hook) should supply this via t(). */
+    translateError?: (code: ErrorCode) => string;
     /** Called after each step completes, so the UI can show live progress. */
     onProgress?: (partial: Partial<ScanResult>) => void;
 }
@@ -50,6 +58,7 @@ interface ResolveResponse {
     originalUrl?: string;
     chain?: RedirectHop[];
     error?: string;
+    code?: ErrorCode;
 }
 
 interface VirusTotalResponse {
@@ -93,9 +102,11 @@ interface BlocklistsResponse {
  * step produces `{ status: ERROR, ... }` rather than throwing, so callers
  * don't need their own try/catch around this. */
 export async function runScan(url: string, options: RunScanOptions): Promise<ScanResult> {
-    const { post, fallbackErrorMessage, onProgress } = options;
+    const { post, fallbackErrorMessage, translateError, onProgress } = options;
 
     const progress = (partial: Partial<ScanResult>) => onProgress?.(partial);
+    const messageFor = (code: ErrorCode | undefined, rawMessage: string | undefined) =>
+        (code && translateError?.(code)) || rawMessage || fallbackErrorMessage;
 
     progress({ status: ScanStatus.UNSHORTENING, verdict: VerdictType.UNKNOWN, originalUrl: url });
 
@@ -104,7 +115,7 @@ export async function runScan(url: string, options: RunScanOptions): Promise<Sca
         // (works for any shortener, not just a hardcoded list).
         const resolveData = (await post('/api/resolve', { url })) as ResolveResponse;
         if (!resolveData.success) {
-            throw new Error(resolveData.error || fallbackErrorMessage);
+            throw new Error(messageFor(resolveData.code, resolveData.error));
         }
 
         const targetUrl = resolveData.finalUrl || resolveData.originalUrl || url;

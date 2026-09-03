@@ -6,6 +6,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { cacheGet, cacheSet, cacheKey } from './cache';
 import { checkRateLimit, getClientId, type RateLimitOptions } from './rateLimit';
+import type { ErrorResponse } from '@/types/api';
 
 /** Strips whitespace/newlines from an env-sourced API key. Required because
  * newline characters are illegal in HTTP header values - a copy-pasted key
@@ -27,12 +28,15 @@ const MISSING_URL_MESSAGE = 'عنوان URL مطلوب';
 
 /** Thrown by requireUrlBody; every source route already has a top-level
  * try/catch, so routes catch this alongside their own errors and respond
- * with `NextResponse.json(err.body, { status: err.status })`. */
+ * with `NextResponse.json(err.body, { status: err.status })`. `body.code`
+ * is what the client keys its own localized message off of - see
+ * lib/scan.ts - `body.error` is a pre-translated Arabic fallback for any
+ * non-JS consumer hitting the API directly. */
 export class ApiError extends Error {
     status: number;
-    body: Record<string, unknown>;
-    constructor(status: number, body: Record<string, unknown>) {
-        super(typeof body.error === 'string' ? body.error : 'API error');
+    body: ErrorResponse;
+    constructor(status: number, body: ErrorResponse) {
+        super(body.error);
         this.status = status;
         this.body = body;
     }
@@ -43,7 +47,7 @@ export class ApiError extends Error {
 export async function requireUrlBody<T extends { url: string }>(request: NextRequest): Promise<T> {
     const body = (await request.json()) as Partial<T>;
     if (!body.url) {
-        throw new ApiError(400, { success: false, error: MISSING_URL_MESSAGE });
+        throw new ApiError(400, { success: false, code: 'missing_url', error: MISSING_URL_MESSAGE });
     }
     return body as T;
 }
@@ -93,7 +97,8 @@ const SSRF_BLOCKED_MESSAGE = 'تم حظر هذا الرابط لأنه يشير 
 /** Standard response body for an SsrfBlockedError, shared so every route
  * that guards a URL reports the same message. */
 export function ssrfBlockedResponse(): NextResponse {
-    return NextResponse.json({ success: false, error: SSRF_BLOCKED_MESSAGE, blocked: true }, { status: 400 });
+    const body: ErrorResponse = { success: false, code: 'ssrf_blocked', error: SSRF_BLOCKED_MESSAGE, blocked: true };
+    return NextResponse.json(body, { status: 400 });
 }
 
 /** Per-route rate limiting. Bucketed as `${routeName}:${clientId}` so hitting
@@ -109,8 +114,11 @@ export function enforceRateLimit(
     const result = checkRateLimit(`${routeName}:${getClientId(request)}`, options);
     if (result.allowed) return null;
 
-    return NextResponse.json(
-        { success: false, error: 'عدد كبير من الطلبات، يرجى المحاولة لاحقاً', retryAfterMs: result.retryAfterMs },
-        { status: 429 }
-    );
+    const body: ErrorResponse = {
+        success: false,
+        code: 'rate_limited',
+        error: 'عدد كبير من الطلبات، يرجى المحاولة لاحقاً',
+        retryAfterMs: result.retryAfterMs,
+    };
+    return NextResponse.json(body, { status: 429 });
 }

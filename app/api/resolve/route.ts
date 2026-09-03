@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import { assertPublicHttpUrl, SsrfBlockedError } from '@/lib/server/ssrfGuard';
 import { ApiError, enforceRateLimit, fetchWithTimeout, requireUrlBody, ssrfBlockedResponse } from '@/lib/server/apiHelpers';
 import type { RedirectHop } from '@/types';
+import type { ErrorResponse } from '@/types/api';
 
 export const runtime = 'nodejs';
 export const maxDuration = 45;
@@ -96,9 +97,7 @@ export async function POST(request: NextRequest) {
         // URL - meaning a link that failed to resolve could get scanned and
         // reported as clean under its unshortened face. Report the failure
         // instead; the client surfaces it rather than silently degrading.
-        return NextResponse.json(
-            { success: false, code: 'resolve_failed', error: 'تعذر تتبع التحويلات لهذا الرابط' },
-            { status: 502 }
-        );
+        const body: ErrorResponse = { success: false, code: 'resolve_failed', error: 'تعذر تتبع التحويلات لهذا الرابط' };
+        return NextResponse.json(body, { status: 502 });
     }
 }

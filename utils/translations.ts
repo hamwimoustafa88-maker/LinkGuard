@@ -27,6 +27,13 @@ const ar = {
         statusComplete: 'اكتمل الفحص',
         statusError: 'حدث خطأ',
 
+        // API error codes (see types/api.ts's ErrorCode)
+        errorMissingUrl: 'عنوان URL مطلوب',
+        errorSsrfBlocked: 'تم حظر هذا الرابط لأنه يشير إلى عنوان شبكة داخلي غير آمن',
+        errorRateLimited: 'عدد كبير من الطلبات، يرجى المحاولة لاحقاً',
+        errorResolveFailed: 'تعذر تتبع التحويلات لهذا الرابط',
+        errorInternal: 'حدث خطأ غير متوقع، يرجى المحاولة لاحقاً',
+
         // Verdict
         verdictSafe: 'آمن',
         verdictSafeSub: 'لم يتم اكتشاف أي تهديدات',
@@ -196,6 +203,13 @@ const en: Record<TranslationKey, string> = {
         statusAnalyzing: 'Analyzing potential threats...',
         statusComplete: 'Scan Complete',
         statusError: 'An error occurred',
+
+        // API error codes (see types/api.ts's ErrorCode)
+        errorMissingUrl: 'A URL is required',
+        errorSsrfBlocked: 'This link was blocked because it points to an unsafe internal network address',
+        errorRateLimited: 'Too many requests, please try again later',
+        errorResolveFailed: 'Could not follow the redirects for this link',
+        errorInternal: 'An unexpected error occurred, please try again later',
 
         // Verdict
         verdictSafe: 'Safe',

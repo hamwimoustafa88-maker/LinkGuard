@@ -138,4 +138,24 @@ describe('runScan', () => {
         expect(result.redirectChain).toHaveLength(5);
         expect(result.riskScore?.evidence.some((e) => e.id === 'longRedirectChain')).toBe(true);
     });
+
+    it('prefers translateError(code) over the raw (always-Arabic) server message when given', async () => {
+        const result = await runScan('https://broken.example', {
+            post: fakePost({ '/api/resolve': { success: false, code: 'resolve_failed', error: 'تعذر تتبع التحويلات' } }),
+            fallbackErrorMessage: 'fallback',
+            translateError: (code) => `translated:${code}`,
+        });
+
+        expect(result.status).toBe(ScanStatus.ERROR);
+        expect(result.error).toBe('translated:resolve_failed');
+    });
+
+    it('falls back to the raw server message when no translateError is given', async () => {
+        const result = await runScan('https://broken.example', {
+            post: fakePost({ '/api/resolve': { success: false, code: 'resolve_failed', error: 'تعذر تتبع التحويلات' } }),
+            fallbackErrorMessage: 'fallback',
+        });
+
+        expect(result.error).toBe('تعذر تتبع التحويلات');
+    });
 });

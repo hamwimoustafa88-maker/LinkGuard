@@ -4,6 +4,7 @@ import { parse } from 'tldts';
 import { assertPublicHttpUrl, SsrfBlockedError } from '@/lib/server/ssrfGuard';
 import { ApiError, enforceRateLimit, requireUrlBody, ssrfBlockedResponse, withCache } from '@/lib/server/apiHelpers';
 import type { DomainInfo, SslInfo } from '@/types';
+import type { ErrorResponse } from '@/types/api';
 
 export const runtime = 'nodejs';
 export const maxDuration = 20;
@@ -151,6 +152,7 @@ export async function POST(request: NextRequest) {
         if (error instanceof ApiError) {
             return NextResponse.json(error.body, { status: error.status });
         }
-        return NextResponse.json({ success: false, error: 'فشل جلب معلومات النطاق' }, { status: 500 });
+        const body: ErrorResponse = { success: false, code: 'internal', error: 'فشل جلب معلومات النطاق' };
+        return NextResponse.json(body, { status: 500 });
     }
 }
