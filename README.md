@@ -18,6 +18,9 @@
 
 [English](#overview) · [العربية](#نظرة-عامة) · [Quick Start](#-quick-start--البدء-السريع) · [Contributing](#-contributing--المساهمة)
 
+<img src="docs/assets/screenshot-home.png" alt="LinkGuard scan screen" width="49%" />
+<img src="docs/assets/screenshot-status.png" alt="LinkGuard live status page" width="49%" />
+
 </div>
 
 ---
