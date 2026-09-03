@@ -1,11 +1,12 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { cleanKey, enforceRateLimit, fetchWithTimeout } from '@/lib/server/apiHelpers';
 
-// /status is an intentionally public live-status page (see README), so this
-// route's per-service detail (including which optional keys aren't
-// configured) is meant to be visible - it was previously just unprotected
-// against being hammered, unlike every other route. Rate limiting is the fix
-// here, not hiding the data the page is built to show.
+// /status is an intentionally public live-status page (see README) - by
+// default this route's per-service detail (including which optional keys
+// aren't configured) is meant to be visible. An operator who'd rather not
+// disclose that can set HEALTH_TOKEN; unset (the default), behavior is
+// unchanged from before this gate existed. Either way, the route is now
+// rate-limited, which is the part that was actually unprotected.
 export const runtime = 'nodejs';
 export const dynamic = 'force-dynamic';
 export const maxDuration = 30;
@@ -34,9 +35,23 @@ async function checkKeyedService(
     }
 }
 
+/** With HEALTH_TOKEN configured, an anonymous (or wrong-token) request only
+ * learns whether each source is reachable - not which optional keys are
+ * unconfigured, nor per-service error text/latency. */
+function redact(status: ServiceStatus): ServiceStatus {
+    return {
+        status: status.status === 'online' ? 'online' : 'offline',
+        latency: 0,
+        message: '',
+    };
+}
+
 export async function GET(request: NextRequest) {
     const rateLimited = enforceRateLimit('health', request, { maxRequests: 20, windowMs: 5 * 60 * 1000 });
     if (rateLimited) return rateLimited;
+
+    const configuredToken = cleanKey(process.env.HEALTH_TOKEN);
+    const authorized = !configuredToken || cleanKey(request.headers.get('x-health-token') ?? undefined) === configuredToken;
 
     const [virustotal, urlscan, safebrowsing, urlhaus, abuseipdb] = await Promise.all([
         checkKeyedService('VIRUSTOTAL_API_KEY', async () => {
@@ -88,5 +103,16 @@ export async function GET(request: NextRequest) {
         }),
     ]);
 
-    return NextResponse.json({ virustotal, urlscan, safebrowsing, urlhaus, abuseipdb });
+    const result = { virustotal, urlscan, safebrowsing, urlhaus, abuseipdb };
+    if (authorized) {
+        return NextResponse.json(result);
+    }
+
+    return NextResponse.json({
+        virustotal: redact(virustotal),
+        urlscan: redact(urlscan),
+        safebrowsing: redact(safebrowsing),
+        urlhaus: redact(urlhaus),
+        abuseipdb: redact(abuseipdb),
+    });
 }

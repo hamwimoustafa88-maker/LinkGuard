@@ -177,6 +177,16 @@ reports lower confidence.
 | `URLHAUS_AUTH_KEY` | [URLhaus (abuse.ch)](https://urlhaus.abuse.ch/api/) | Free auth key (account) |
 | `PHISHTANK_APP_KEY` | [PhishTank](https://www.phishtank.com/api_register.php) | Free app key (registration often closed) |
 | `ABUSEIPDB_API_KEY` | [AbuseIPDB](https://www.abuseipdb.com/register) | 1,000 checks/day |
+| `HEALTH_TOKEN` | *(self-chosen)* | — restricts the detail `/api/health` and `/status` reveal anonymously; see below |
+
+`/status` is a deliberately public live-status page. Left unset (the default), it stays fully
+public. If you'd rather not disclose *which* optional keys are configured, set `HEALTH_TOKEN`
+and pass the same value in an `x-health-token` header to get full detail — anonymous requests
+then only see an aggregate online/offline reading per source.
+
+*`/status` صفحة حالة علنية عمداً. إن تُرك `HEALTH_TOKEN` فارغاً (الافتراضي) تبقى الصفحة علنية
+بالكامل. لإخفاء تفاصيل المفاتيح المُفعّلة عن الزوار المجهولين، عيّن القيمة وأرسلها في ترويسة
+`x-health-token` للحصول على التفاصيل الكاملة.*
 
 > [!WARNING]
 > Never commit `.env.local` or real API keys to version control. It is already covered by
