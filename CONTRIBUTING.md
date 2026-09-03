@@ -69,8 +69,9 @@ LinkGuard/
 │   ├── api/            # Backend routes (resolve, virustotal, safebrowsing, domaininfo, …)
 │   └── status/         # Live source-health page
 ├── components/         # React UI components
-├── lib/                # Shared server/client helpers
-├── utils/              # Core logic — scoring.ts, brandMatcher.ts, …
+├── hooks/              # React hooks (useScan, …)
+├── lib/                # Shared server/client helpers — scan.ts, verdictTheme.ts, server/apiHelpers.ts, …
+├── utils/              # Core logic — scoring.ts, brandMatcher.ts, translations.ts, …
 ├── types/              # TypeScript type definitions
 ├── __tests__/          # Vitest test suite
 ├── scripts/            # Build/dev scripts (PWA icon generation)
@@ -133,8 +134,12 @@ Please keep these invariants intact — they are what makes LinkGuard trustworth
 2. **Explainability** — every signal that affects the risk score must surface in the
    "Why this verdict?" panel with its source status.
 3. **Privacy & safety** — never visit a link on the user's behalf beyond controlled resolution;
-   keep the SSRF guard in `/api/resolve` intact.
+   keep the SSRF guard (`lib/server/ssrfGuard.ts`) intact wherever it's used — `/api/resolve`
+   and `/api/domaininfo` today.
 4. **Bilingual UX** — new UI text must be provided in both Arabic and English, with correct RTL.
+5. **Reuse the shared route helpers** — a new source route should build on
+   `lib/server/apiHelpers.ts` (timeouts, caching, rate limiting, request validation) rather
+   than reimplementing them.
 
 *حافظ على هذه الثوابت: التدهور الآمن، قابلية التفسير، الخصوصية والأمان، والواجهة ثنائية اللغة.*
 
