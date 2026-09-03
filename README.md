@@ -1,6 +1,6 @@
 <div align="center">
 
-<img src="Logo.png" alt="LinkGuard Logo" width="140" />
+<img src="docs/assets/logo.png" alt="LinkGuard Logo" width="140" />
 
 # LinkGuard 🛡️
 

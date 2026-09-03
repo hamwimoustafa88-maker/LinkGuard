@@ -73,9 +73,9 @@ LinkGuard/
 ├── utils/              # Core logic — scoring.ts, brandMatcher.ts, …
 ├── types/              # TypeScript type definitions
 ├── __tests__/          # Vitest test suite
-├── scripts/            # Build/dev scripts (incl. scripts/manual/ scratch tools)
+├── scripts/            # Build/dev scripts (PWA icon generation)
 ├── public/             # Static assets
-└── docs/               # Reports & documentation assets
+└── docs/               # Documentation & the logo master
 ```
 
 ---

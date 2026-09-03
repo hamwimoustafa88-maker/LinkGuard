@@ -1,4 +1,4 @@
-// One-off script: generates all PWA icon assets from Logo.png.
+// One-off script: generates all PWA icon assets from the logo master.
 // Run with: node scripts/generate-icons.mjs
 import sharp from 'sharp';
 import path from 'path';
@@ -7,7 +7,7 @@ import { fileURLToPath } from 'url';
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const ROOT = path.resolve(__dirname, '..');
-const LOGO = path.join(ROOT, 'Logo.png');
+const LOGO = path.join(ROOT, 'docs', 'assets', 'logo.png');
 const BG = '#0a0e27';
 
 async function generateStandardIcon(size, outPath) {
@@ -39,14 +39,14 @@ async function generateMaskableIcon(size, outPath) {
 
 async function main() {
     if (!fs.existsSync(LOGO)) {
-        console.error('Logo.png not found at', LOGO);
+        console.error('Logo master not found at', LOGO);
         process.exit(1);
     }
 
     const iconsDir = path.join(ROOT, 'public', 'icons');
     await fs.promises.mkdir(iconsDir, { recursive: true });
 
-    console.log('Generating PWA icons from Logo.png...');
+    console.log('Generating PWA icons from', path.relative(ROOT, LOGO), '...');
     await generateStandardIcon(192, path.join(iconsDir, 'icon-192.png'));
     await generateStandardIcon(512, path.join(iconsDir, 'icon-512.png'));
     await generateMaskableIcon(512, path.join(iconsDir, 'icon-maskable-512.png'));
