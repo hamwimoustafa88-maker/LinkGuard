@@ -3,9 +3,9 @@
 // the results, and produce a final ScanResult. Kept React-free (the `post`
 // function is injected) so it's directly unit-testable without a DOM.
 
-import { ScanStatus, VerdictType, type ScanResult, type EvidenceItem, type SourceOutcome, type RedirectHop } from '@/types';
+import { ScanStatus, VerdictType, type ScanResult, type EvidenceItem, type SourceOutcome, type RedirectHop, type VTStats, type DomainInfo, type SslInfo } from '@/types';
 import { analyzeBrandMismatch, analyzeUrlHeuristics } from '@/utils/brandMatcher';
-import { aggregateVerdict, scoreVirusTotal, scoreSafeBrowsing, scoreBlocklists, scoreDomainAge, scoreSsl, scoreRedirects } from '@/utils/scoring';
+import { aggregateVerdict, scoreVirusTotal, scoreSafeBrowsing, scoreBlocklists, scoreDomainAge, scoreSsl, scoreRedirects, type BlocklistsResult } from '@/utils/scoring';
 
 export type PostFn = (url: string, body: unknown) => Promise<Record<string, unknown> & { success?: boolean }>;
 
@@ -38,6 +38,57 @@ export async function postJson(url: string, body: unknown): Promise<Record<strin
     }
 }
 
+// `PostFn` stays a generic (untyped) JSON-in/JSON-out signature so a single
+// fake implementation can drive every route in a test. These describe each
+// actual route's response shape (mirroring their app/api/*/route.ts return
+// values) so the `post(...) as X` casts below still get real structural
+// checking on every property access that follows, unlike a blanket `as
+// never`/`any` that would silence mistakes at every use site downstream.
+interface ResolveResponse {
+    success: boolean;
+    finalUrl?: string;
+    originalUrl?: string;
+    chain?: RedirectHop[];
+    error?: string;
+}
+
+interface VirusTotalResponse {
+    success: boolean;
+    status?: 'ok' | 'skipped' | 'error';
+    stats?: VTStats;
+    vtEngines?: ScanResult['vtEngines'];
+    vtUrlMeta?: ScanResult['vtUrlMeta'];
+    scanId?: string;
+}
+
+interface UrlscanResponse {
+    success: boolean;
+    status?: 'ok' | 'skipped' | 'error';
+    screenshotUrl?: string | null;
+    country?: string | null;
+    ip?: string | null;
+    server?: string | null;
+}
+
+interface SafeBrowsingResponse {
+    success: boolean;
+    status?: 'ok' | 'skipped' | 'error';
+    matches?: string[];
+}
+
+interface DomainInfoResponse {
+    success: boolean;
+    domainAge?: { status: 'ok' | 'skipped' | 'error'; info?: DomainInfo };
+    ssl?: { status: 'ok' | 'skipped' | 'error'; info?: SslInfo };
+}
+
+interface BlocklistsResponse {
+    success: boolean;
+    urlhaus?: BlocklistsResult['urlhaus'];
+    phishtank?: BlocklistsResult['phishtank'];
+    abuseipdb?: BlocklistsResult['abuseipdb'];
+}
+
 /** Runs a full scan and always resolves to a ScanResult - a failure at any
  * step produces `{ status: ERROR, ... }` rather than throwing, so callers
  * don't need their own try/catch around this. */
@@ -51,23 +102,23 @@ export async function runScan(url: string, options: RunScanOptions): Promise<Sca
     try {
         // Step 1: Resolve the final destination by following redirects ourselves
         // (works for any shortener, not just a hardcoded list).
-        const resolveData = await post('/api/resolve', { url });
+        const resolveData = (await post('/api/resolve', { url })) as ResolveResponse;
         if (!resolveData.success) {
-            throw new Error((resolveData.error as string) || fallbackErrorMessage);
+            throw new Error(resolveData.error || fallbackErrorMessage);
         }
 
-        const targetUrl = (resolveData.finalUrl as string) || (resolveData.originalUrl as string);
-        const redirectChain: RedirectHop[] = (resolveData.chain as RedirectHop[]) || [];
+        const targetUrl = resolveData.finalUrl || resolveData.originalUrl || url;
+        const redirectChain: RedirectHop[] = resolveData.chain || [];
 
         progress({ status: ScanStatus.SCANNING, unshortenedUrl: targetUrl, redirectChain });
 
         // Step 2: Run every independent external source in parallel - one
         // slow/unavailable source no longer blocks or fails the whole scan.
         const [vtSettled, urlscanSettled, sbSettled, domainSettled] = await Promise.allSettled([
-            post('/api/virustotal', { url: targetUrl }),
-            post('/api/urlscan', { url: targetUrl }),
-            post('/api/safebrowsing', { url: targetUrl }),
-            post('/api/domaininfo', { url: targetUrl }),
+            post('/api/virustotal', { url: targetUrl }) as Promise<VirusTotalResponse>,
+            post('/api/urlscan', { url: targetUrl }) as Promise<UrlscanResponse>,
+            post('/api/safebrowsing', { url: targetUrl }) as Promise<SafeBrowsingResponse>,
+            post('/api/domaininfo', { url: targetUrl }) as Promise<DomainInfoResponse>,
         ]);
 
         progress({ status: ScanStatus.ANALYZING });
@@ -77,10 +128,10 @@ export async function runScan(url: string, options: RunScanOptions): Promise<Sca
         const sbData = sbSettled.status === 'fulfilled' ? sbSettled.value : null;
         const domainData = domainSettled.status === 'fulfilled' ? domainSettled.value : null;
 
-        const blocklistsData = await post('/api/blocklists', {
+        const blocklistsData = await (post('/api/blocklists', {
             url: targetUrl,
-            ip: (urlscanData?.ip as string) || undefined,
-        }).catch(() => null);
+            ip: urlscanData?.ip || undefined,
+        }) as Promise<BlocklistsResponse>).catch(() => null);
 
         const evidence: EvidenceItem[] = [];
         const sources: SourceOutcome[] = [];
@@ -88,7 +139,7 @@ export async function runScan(url: string, options: RunScanOptions): Promise<Sca
         // VirusTotal
         if (vtData?.status === 'ok' && vtData.stats) {
             sources.push({ source: 'virustotal', status: 'ok' });
-            const vtEvidence = scoreVirusTotal(vtData.stats as never);
+            const vtEvidence = scoreVirusTotal(vtData.stats);
             if (vtEvidence) evidence.push(vtEvidence);
         } else {
             sources.push({ source: 'virustotal', status: vtData?.status === 'skipped' ? 'skipped' : 'error' });
@@ -100,15 +151,18 @@ export async function runScan(url: string, options: RunScanOptions): Promise<Sca
         // Google Safe Browsing
         if (sbData?.status === 'ok') {
             sources.push({ source: 'safebrowsing', status: 'ok' });
-            const gsbEvidence = scoreSafeBrowsing(sbData.matches as string[] | undefined);
+            const gsbEvidence = scoreSafeBrowsing(sbData.matches);
             if (gsbEvidence) evidence.push(gsbEvidence);
         } else {
             sources.push({ source: 'safebrowsing', status: sbData?.status === 'skipped' ? 'skipped' : 'error' });
         }
 
         // URLhaus / PhishTank / AbuseIPDB
-        if (blocklistsData?.success) {
-            evidence.push(...scoreBlocklists(blocklistsData as never, sources));
+        if (blocklistsData?.success && blocklistsData.urlhaus && blocklistsData.phishtank && blocklistsData.abuseipdb) {
+            evidence.push(...scoreBlocklists(
+                { urlhaus: blocklistsData.urlhaus, phishtank: blocklistsData.phishtank, abuseipdb: blocklistsData.abuseipdb },
+                sources
+            ));
         }
 
         // Local heuristics - always available, never fails
@@ -117,10 +171,10 @@ export async function runScan(url: string, options: RunScanOptions): Promise<Sca
         const phishingAlert = analyzeBrandMismatch(targetUrl);
 
         // Domain age + SSL
-        let domainInfo;
-        let sslInfo;
+        let domainInfo: DomainInfo | undefined;
+        let sslInfo: SslInfo | undefined;
         if (domainData?.success) {
-            const domainAge = domainData.domainAge as { status: string; info?: never } | undefined;
+            const domainAge = domainData.domainAge;
             if (domainAge?.status === 'ok') {
                 sources.push({ source: 'domainAge', status: 'ok' });
                 domainInfo = domainAge.info;
@@ -130,7 +184,7 @@ export async function runScan(url: string, options: RunScanOptions): Promise<Sca
                 sources.push({ source: 'domainAge', status: domainAge?.status === 'skipped' ? 'skipped' : 'error' });
             }
 
-            const ssl = domainData.ssl as { status: string; info?: never } | undefined;
+            const ssl = domainData.ssl;
             if (ssl?.status === 'ok') {
                 sources.push({ source: 'ssl', status: 'ok' });
                 sslInfo = ssl.info;
@@ -150,15 +204,15 @@ export async function runScan(url: string, options: RunScanOptions): Promise<Sca
             originalUrl: url,
             unshortenedUrl: targetUrl,
             verdict: aggregated.verdict,
-            vtStats: vtData?.stats as never,
-            vtEngines: vtData?.vtEngines as never,
-            vtUrlMeta: vtData?.vtUrlMeta as never,
-            scanId: vtData?.scanId as string | undefined,
-            screenshotUrl: urlscanData?.screenshotUrl as string | undefined,
+            vtStats: vtData?.stats,
+            vtEngines: vtData?.vtEngines,
+            vtUrlMeta: vtData?.vtUrlMeta,
+            scanId: vtData?.scanId,
+            screenshotUrl: urlscanData?.screenshotUrl ?? undefined,
             networkInfo: {
-                country: urlscanData?.country as string | undefined,
-                ip: urlscanData?.ip as string | undefined,
-                server: urlscanData?.server as string | undefined,
+                country: urlscanData?.country ?? undefined,
+                ip: urlscanData?.ip ?? undefined,
+                server: urlscanData?.server ?? undefined,
             },
             phishingAlert,
             riskScore: aggregated,
