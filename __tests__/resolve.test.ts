@@ -45,6 +45,16 @@ describe('POST /api/resolve', () => {
         expect(data.chain).toHaveLength(1);
     });
 
+    it('defaults a schemeless URL to https instead of treating it as invalid', async () => {
+        (fetch as ReturnType<typeof vi.fn>).mockResolvedValueOnce(okResponse(200));
+
+        const res = await POST(request({ url: '1.2.3.4' }, 'client-schemeless'));
+        const data = await res.json();
+
+        expect(res.status).toBe(200);
+        expect(data).toMatchObject({ success: true, finalUrl: 'https://1.2.3.4/' });
+    });
+
     it('follows a single redirect to its target', async () => {
         (fetch as ReturnType<typeof vi.fn>)
             .mockResolvedValueOnce(okResponse(302, 'https://5.6.7.8/final'))

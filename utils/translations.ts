@@ -13,6 +13,7 @@ const ar = {
 
         // Home
         scanPlaceholder: 'ضع الرابط هنا لفحصه...',
+        pasteButton: 'لصق الرابط',
         scanButton: 'افحص الآن',
         scanningButton: 'جاري الفحص...',
         scanInfo: 'نقوم بفحص أكثر من 70 قاعدة بيانات للحماية من البرمجيات الخبيثة والتصيد الاحتيالي',
@@ -195,6 +196,7 @@ const en: Record<TranslationKey, string> = {
 
         // Home
         scanPlaceholder: 'Paste link here to scan...',
+        pasteButton: 'Paste link',
         scanButton: 'Scan Now',
         scanningButton: 'Scanning...',
         scanInfo: 'We scan over 70 databases to protect against malware and phishing',

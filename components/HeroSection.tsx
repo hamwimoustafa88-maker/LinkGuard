@@ -2,7 +2,7 @@
 
 import { useState } from 'react';
 import { motion } from 'framer-motion';
-import { Search, Shield, Camera } from 'lucide-react';
+import { Search, Shield, Camera, ClipboardPaste } from 'lucide-react';
 import QrScannerModal from './QrScannerModal';
 import { useLanguage } from './LanguageContext';
 import { useAndroidBackButton } from '@/hooks/useAndroidBackButton';
@@ -44,6 +44,17 @@ export default function HeroSection({ onScan, isScanning, isCompact = false }: H
         }, 100);
     };
 
+    const handlePaste = async () => {
+        try {
+            const text = await navigator.clipboard.readText();
+            if (text.trim()) setUrl(text.trim());
+        } catch {
+            // Clipboard permission denied/unavailable (e.g. an insecure
+            // context, or the WebView blocked it) - the user can still
+            // long-press the field for the native paste menu.
+        }
+    };
+
     return (
         <motion.section
             initial={{ opacity: 0, y: 20 }}
@@ -64,10 +75,27 @@ export default function HeroSection({ onScan, isScanning, isCompact = false }: H
                                     onChange={(e) => setUrl(e.target.value)}
                                     placeholder={t('scanPlaceholder')}
                                     disabled={isScanning}
-                                    className={`w-full bg-cyber-navy/90 backdrop-blur-xs border-2 border-cyber-safe/30 rounded-2xl text-white placeholder-gray-400 focus:outline-hidden focus:border-cyber-safe focus:shadow-[0_0_15px_rgba(0,255,136,0.3)] transition-all duration-300 disabled:opacity-50 ${isCompact ? 'px-6 py-4 text-base' : 'px-8 py-6 text-xl'}`}
+                                    // Left/right padding is intentionally asymmetric (not px-*): the
+                                    // icons below are pinned to fixed physical sides regardless of
+                                    // page direction (the input's own dir="ltr" means typed/placeholder
+                                    // text always starts at its left edge), so each side needs just
+                                    // enough clearance for its own icon rather than equal padding -
+                                    // equal padding let text start directly under the search icon.
+                                    className={`w-full bg-cyber-navy/90 backdrop-blur-xs border-2 border-cyber-safe/30 rounded-2xl text-white placeholder-gray-400 focus:outline-hidden focus:border-cyber-safe focus:shadow-[0_0_15px_rgba(0,255,136,0.3)] transition-all duration-300 disabled:opacity-50 ${isCompact ? 'pl-12 pr-14 py-4 text-base' : 'pl-14 pr-16 py-6 text-xl'}`}
                                     dir="ltr"
                                 />
-                                <Search className={`absolute left-4 top-1/2 -translate-y-1/2 text-cyber-safe/50 rtl:left-4 rtl:right-auto ltr:right-4 ltr:left-auto ${isCompact ? 'w-5 h-5' : 'left-6 w-6 h-6 rtl:left-6 ltr:right-6'}`} />
+                                <Search className={`absolute left-4 top-1/2 -translate-y-1/2 text-cyber-safe/50 pointer-events-none ${isCompact ? 'w-5 h-5' : 'left-6 w-6 h-6'}`} />
+                                {!isScanning && (
+                                    <button
+                                        type="button"
+                                        onClick={handlePaste}
+                                        title={t('pasteButton')}
+                                        aria-label={t('pasteButton')}
+                                        className={`absolute right-4 top-1/2 -translate-y-1/2 text-cyber-safe/50 hover:text-cyber-safe transition-colors ${isCompact ? '' : 'right-6'}`}
+                                    >
+                                        <ClipboardPaste className={isCompact ? 'w-5 h-5' : 'w-6 h-6'} />
+                                    </button>
+                                )}
                             </div>
                         </div>
 
