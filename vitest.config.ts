@@ -20,10 +20,10 @@ export default defineConfig({
             // actual run) rather than an aspirational number - this is a
             // ratchet against regression, not a target.
             thresholds: {
-                statements: 65,
-                branches: 58,
-                functions: 60,
-                lines: 65,
+                statements: 82,
+                branches: 70,
+                functions: 82,
+                lines: 84,
             },
         },
         // Two projects instead of one shared environment: most tests are
