@@ -1,5 +1,9 @@
 <div align="center">
 
+<a href="https://github.com/hamwimoustafa88-maker/LinkGuard" title="View on GitHub">
+  <img src="https://img.shields.io/badge/GitHub-View_Repository-181717?logo=github&logoColor=white&style=for-the-badge" alt="View on GitHub" />
+</a>
+
 <img src="docs/assets/logo.png" alt="LinkGuard Logo" width="140" />
 
 # LinkGuard 🛡️
@@ -15,6 +19,7 @@
 [![Tailwind CSS](https://img.shields.io/badge/Tailwind_CSS-4-38B2AC?logo=tailwind-css&logoColor=white)](https://tailwindcss.com/)
 [![Tested with Vitest](https://img.shields.io/badge/Tested_with-Vitest-6E9F18?logo=vitest&logoColor=white)](https://vitest.dev/)
 [![PWA Ready](https://img.shields.io/badge/PWA-installable-5A0FC8?logo=pwa&logoColor=white)](#-key-features--المميزات-الرئيسية)
+[![Android](https://img.shields.io/badge/Android-Coming_Soon_on_Google_Play-3DDC84?logo=googleplay&logoColor=white)](docs/ANDROID_DEPLOYMENT.md)
 
 [English](#overview) · [العربية](#نظرة-عامة) · [Quick Start](#-quick-start--البدء-السريع) · [Contributing](#-contributing--المساهمة)
 
@@ -69,6 +74,7 @@ optional — a missing or failing source simply lowers confidence instead of bre
 - 🌐 **Bilingual UI (AR/EN)** — full RTL support with a dark theme. *(واجهة ثنائية اللغة بدعم RTL.)*
 - 📶 **Live `/status` page** — real-time health and response time for every external source. *(صفحة حالة حية لكل مصدر.)*
 - 📲 **Installable PWA** — add LinkGuard to your home screen and run it like a native app. *(قابل للتثبيت كتطبيق PWA.)*
+- 🤖 **Native Android app** *(coming soon on Google Play)* — a Capacitor-based build with QR scanning, a share-target intent (scan a link shared straight from WhatsApp/Telegram/Chrome), and offline-aware UI. See [`docs/ANDROID_DEPLOYMENT.md`](docs/ANDROID_DEPLOYMENT.md). *(تطبيق أندرويد أصلي — قريباً على Google Play.)*
 
 ---
 
