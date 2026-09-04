@@ -4,8 +4,18 @@ import { useState } from 'react';
 import Link from 'next/link';
 import Image from 'next/image';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Shield, Eye, Lock, AlertTriangle, Code2, Phone, Mail, X, Linkedin, Activity } from 'lucide-react';
+import { Shield, Eye, Lock, AlertTriangle, Code2, Phone, Mail, X, Activity } from 'lucide-react';
 import { useLanguage } from './LanguageContext';
+
+// lucide-react dropped brand/social icons in its 1.x line; inline the LinkedIn
+// glyph so the developer contact card keeps its recognizable brand mark.
+function LinkedinIcon({ className }: { className?: string }) {
+    return (
+        <svg viewBox="0 0 24 24" fill="currentColor" className={className} aria-hidden="true">
+            <path d="M20.447 20.452h-3.554v-5.569c0-1.328-.027-3.037-1.852-3.037-1.853 0-2.136 1.445-2.136 2.939v5.667H9.351V9h3.414v1.561h.046c.477-.9 1.637-1.85 3.37-1.85 3.601 0 4.267 2.37 4.267 5.455v6.286zM5.337 7.433a2.063 2.063 0 1 1 0-4.127 2.063 2.063 0 0 1 0 4.127zM7.119 20.452H3.555V9h3.564v11.452zM22.225 0H1.771C.792 0 0 .774 0 1.729v20.542C0 23.227.792 24 1.771 24h20.451C23.2 24 24 23.227 24 22.271V1.729C24 .774 23.2 0 22.222 0h.003z" />
+        </svg>
+    );
+}
 
 export default function EducationFooter() {
     const { t, language } = useLanguage();
@@ -54,7 +64,7 @@ export default function EducationFooter() {
                             whileHover={{ y: -8, boxShadow: '0 10px 30px -10px rgba(0, 255, 136, 0.3)' }}
                             className="glass-effect rounded-2xl p-6 border border-cyber-safe/20 hover:border-cyber-safe/50 transition-all duration-300"
                         >
-                            <div className="bg-gradient-to-br from-cyber-safe/20 to-cyber-glow/20 w-16 h-16 rounded-xl flex items-center justify-center mb-4">
+                            <div className="bg-linear-to-br from-cyber-safe/20 to-cyber-glow/20 w-16 h-16 rounded-xl flex items-center justify-center mb-4">
                                 <Icon className="w-8 h-8 text-cyber-safe" />
                             </div>
                             <h3 className="text-xl font-bold mb-2 text-white">{tip.title}</h3>
@@ -94,7 +104,7 @@ export default function EducationFooter() {
                             animate={{ opacity: 1 }}
                             exit={{ opacity: 0 }}
                             onClick={() => setIsDeveloperModalOpen(false)}
-                            className="absolute inset-0 bg-black/80 backdrop-blur-sm"
+                            className="absolute inset-0 bg-black/80 backdrop-blur-xs"
                         />
                         <motion.div
                             initial={{ opacity: 0, scale: 0.9, y: 20 }}
@@ -110,7 +120,7 @@ export default function EducationFooter() {
                             </button>
 
                             <div className="text-center">
-                                <div className="w-40 h-40 mx-auto mb-6 rounded-full p-1 bg-gradient-to-br from-cyber-safe to-cyber-glow shadow-[0_0_30px_rgba(0,255,136,0.3)] relative group">
+                                <div className="w-40 h-40 mx-auto mb-6 rounded-full p-1 bg-linear-to-br from-cyber-safe to-cyber-glow shadow-[0_0_30px_rgba(0,255,136,0.3)] relative group">
                                     <div className="relative w-full h-full rounded-full overflow-hidden bg-cyber-dark border-4 border-black/50">
                                         <Image
                                             src="/developer.png"
@@ -120,7 +130,7 @@ export default function EducationFooter() {
                                         />
                                     </div>
                                 </div>
-                                <h3 className="text-3xl font-bold mb-2 bg-gradient-to-r from-white to-gray-300 bg-clip-text text-transparent">
+                                <h3 className="text-3xl font-bold mb-2 bg-linear-to-r from-white to-gray-300 bg-clip-text text-transparent">
                                     {t('devName')}
                                 </h3>
                                 <p className="text-cyber-glow mb-6 font-mono text-sm tracking-wide">{t('devTitle')}</p>
@@ -132,7 +142,7 @@ export default function EducationFooter() {
                                         rel="noopener noreferrer"
                                         className="flex items-center justify-center gap-3 p-3 bg-[#0077b5]/10 hover:bg-[#0077b5]/30 border border-[#0077b5]/50 rounded-xl transition-all group hover:scale-105 hover:shadow-[0_0_15px_rgba(0,119,181,0.3)]"
                                     >
-                                        <Linkedin className="w-5 h-5 text-[#0077b5]" />
+                                        <LinkedinIcon className="w-5 h-5 text-[#0077b5]" />
                                         <span className="text-gray-200 font-bold group-hover:text-white transition-colors">{t('linkedin')}</span>
                                     </a>
 

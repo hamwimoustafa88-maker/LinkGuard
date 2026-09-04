@@ -1,14 +1,70 @@
-@tailwind base;
-@tailwind components;
-@tailwind utilities;
+@import 'tailwindcss';
 
-:root {
-  --cyber-dark: #0a0e27;
-  --cyber-navy: #0f172a;
-  --cyber-safe: #00ff88;
-  --cyber-danger: #ff0055;
-  --cyber-warning: #ffaa00;
-  --cyber-glow: #00ffff;
+@theme {
+  --color-cyber-dark: #0a0e27;
+  --color-cyber-navy: #0f172a;
+  --color-cyber-safe: #00ff88;
+  --color-cyber-danger: #ff0055;
+  --color-cyber-warning: #ffaa00;
+  --color-cyber-glow: #00ffff;
+
+  /* next/font exposes Cairo/Tajawal under --font-cairo-src/--font-tajawal-src
+     (see app/layout.tsx) - point the font-* utilities at those instead of the
+     literal family name, which has no matching @font-face and would silently
+     fall back to sans-serif. */
+  --font-cairo: var(--font-cairo-src), sans-serif;
+  --font-tajawal: var(--font-tajawal-src), sans-serif;
+}
+
+/*
+  The default border color has changed to `currentcolor` in Tailwind CSS v4,
+  so we've added these compatibility styles to make sure everything still
+  looks the same as it did with Tailwind CSS v3.
+
+  If we ever want to remove these styles, we need to add an explicit border
+  color utility to any element that depends on these defaults.
+*/
+@layer base {
+  *,
+  ::after,
+  ::before,
+  ::backdrop,
+  ::file-selector-button {
+    border-color: var(--color-gray-200, currentcolor);
+  }
+}
+
+@utility neon-glow-safe {
+  box-shadow:
+    0 0 10px var(--color-cyber-safe),
+    0 0 20px var(--color-cyber-safe),
+    0 0 30px var(--color-cyber-safe);
+}
+
+@utility neon-glow-danger {
+  box-shadow:
+    0 0 10px var(--color-cyber-danger),
+    0 0 20px var(--color-cyber-danger),
+    0 0 30px var(--color-cyber-danger);
+}
+
+@utility neon-glow-warning {
+  box-shadow:
+    0 0 10px var(--color-cyber-warning),
+    0 0 20px var(--color-cyber-warning),
+    0 0 30px var(--color-cyber-warning);
+}
+
+@utility glass-effect {
+  background: rgba(255, 255, 255, 0.05);
+  backdrop-filter: blur(10px);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+@utility terminal-text {
+  font-family: 'Courier New', monospace;
+  color: var(--color-cyber-safe);
+  text-shadow: 0 0 5px var(--color-cyber-safe);
 }
 
 @layer base {
@@ -18,55 +74,23 @@
     min-height: 100vh;
   }
 
-
-  /* Custom scrollbar */
+  /* Custom scrollbar (applies globally - the .custom-scrollbar class some
+     components reference does nothing and can be dropped from them) */
   ::-webkit-scrollbar {
     width: 10px;
   }
 
   ::-webkit-scrollbar-track {
-    background: var(--cyber-dark);
+    background: var(--color-cyber-dark);
   }
 
   ::-webkit-scrollbar-thumb {
-    background: var(--cyber-safe);
+    background: var(--color-cyber-safe);
     border-radius: 5px;
   }
 
   ::-webkit-scrollbar-thumb:hover {
-    background: var(--cyber-glow);
-  }
-}
-
-@layer utilities {
-  .neon-glow-safe {
-    box-shadow: 0 0 10px var(--cyber-safe),
-      0 0 20px var(--cyber-safe),
-      0 0 30px var(--cyber-safe);
-  }
-
-  .neon-glow-danger {
-    box-shadow: 0 0 10px var(--cyber-danger),
-      0 0 20px var(--cyber-danger),
-      0 0 30px var(--cyber-danger);
-  }
-
-  .neon-glow-warning {
-    box-shadow: 0 0 10px var(--cyber-warning),
-      0 0 20px var(--cyber-warning),
-      0 0 30px var(--cyber-warning);
-  }
-
-  .glass-effect {
-    background: rgba(255, 255, 255, 0.05);
-    backdrop-filter: blur(10px);
-    border: 1px solid rgba(255, 255, 255, 0.1);
-  }
-
-  .terminal-text {
-    font-family: 'Courier New', monospace;
-    color: var(--cyber-safe);
-    text-shadow: 0 0 5px var(--cyber-safe);
+    background: var(--color-cyber-glow);
   }
 }
 

@@ -5,16 +5,19 @@ import Providers from '@/components/Providers';
 import ServiceWorkerRegistration from '@/components/ServiceWorkerRegistration';
 import InstallPrompt from '@/components/InstallPrompt';
 
+// Exposed as --font-*-src (not --font-cairo/--font-tajawal) because Tailwind
+// v4's @theme block owns those names for the font-cairo/font-tajawal
+// utilities (see app/globals.css), which point back at these variables.
 const cairo = Cairo({
     subsets: ['arabic', 'latin'],
-    variable: '--font-cairo',
+    variable: '--font-cairo-src',
     display: 'swap',
 });
 
 const tajawal = Tajawal({
     weight: ['400', '500', '700'],
     subsets: ['arabic', 'latin'],
-    variable: '--font-tajawal',
+    variable: '--font-tajawal-src',
     display: 'swap',
 });
 
@@ -56,7 +59,7 @@ export default function RootLayout({
 
     return (
         <html lang="ar" dir="rtl">
-            <body className={`${cairo.variable} ${tajawal.variable} antialiased bg-cyber-dark text-white`}>
+            <body className={`${cairo.variable} ${tajawal.variable} font-cairo antialiased bg-cyber-dark text-white`}>
                 <script
                     type="application/ld+json"
                     dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}

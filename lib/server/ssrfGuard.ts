@@ -21,7 +21,8 @@ export class SsrfBlockedError extends Error {
 function isPrivateIPv4(ip: string): boolean {
     const parts = ip.split('.').map(Number);
     if (parts.length !== 4 || parts.some(p => Number.isNaN(p))) return true;
-    const [a, b] = parts;
+    // parts.length === 4 was just checked above, so both indices exist.
+    const [a, b] = parts as [number, number, number, number];
     if (a === 0) return true; // 0.0.0.0/8
     if (a === 10) return true; // 10/8
     if (a === 127) return true; // 127/8
@@ -53,11 +54,6 @@ function isPrivateIp(ip: string): boolean {
     if (net.isIPv4(ip)) return isPrivateIPv4(ip);
     if (net.isIPv6(ip)) return isPrivateIPv6(ip);
     return true; // unknown format: fail closed
-}
-
-export interface SafeUrlCheck {
-    ok: boolean;
-    reason?: string;
 }
 
 export async function assertPublicHttpUrl(rawUrl: string): Promise<URL> {

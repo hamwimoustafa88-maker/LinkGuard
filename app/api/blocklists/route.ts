@@ -1,17 +1,13 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { cacheGet, cacheSet, cacheKey } from '@/lib/server/cache';
+import { ApiError, cleanKey, enforceRateLimit, fetchWithTimeout, internalErrorResponse, requireUrlBody, withCache } from '@/lib/server/apiHelpers';
 
+export const runtime = 'nodejs';
 export const maxDuration = 20;
 
 interface SubResult {
     status: 'ok' | 'skipped' | 'error';
     listed: boolean;
     detail?: string;
-}
-
-// يزيل أي مسافات/أسطر جديدة من المفتاح — قيم الأسطر الجديدة غير مسموحة في HTTP headers
-function cleanKey(value: string | undefined): string {
-    return (value || '').replace(/\s+/g, '');
 }
 
 async function checkUrlhaus(url: string): Promise<SubResult> {
@@ -22,11 +18,10 @@ async function checkUrlhaus(url: string): Promise<SubResult> {
         const form = new URLSearchParams();
         form.append('url', url);
 
-        const res = await fetch('https://urlhaus-api.abuse.ch/v1/url/', {
+        const res = await fetchWithTimeout('https://urlhaus-api.abuse.ch/v1/url/', {
             method: 'POST',
             headers: { 'Auth-Key': authKey, 'Content-Type': 'application/x-www-form-urlencoded' },
             body: form,
-            signal: AbortSignal.timeout(8000),
         });
 
         if (!res.ok) return { status: 'error', listed: false };
@@ -52,11 +47,10 @@ async function checkPhishtank(url: string): Promise<SubResult> {
         form.append('format', 'json');
         if (appKey) form.append('app_key', appKey);
 
-        const res = await fetch('https://checkurl.phishtank.com/checkurl/', {
+        const res = await fetchWithTimeout('https://checkurl.phishtank.com/checkurl/', {
             method: 'POST',
             headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
             body: form,
-            signal: AbortSignal.timeout(8000),
         });
 
         if (!res.ok) return { status: 'error', listed: false };
@@ -76,12 +70,9 @@ async function checkAbuseIpdb(ip: string): Promise<SubResult & { score?: number 
     if (!apiKey) return { status: 'skipped', listed: false };
 
     try {
-        const res = await fetch(
+        const res = await fetchWithTimeout(
             `https://api.abuseipdb.com/api/v2/check?ipAddress=${encodeURIComponent(ip)}&maxAgeInDays=90`,
-            {
-                headers: { Key: apiKey, Accept: 'application/json' },
-                signal: AbortSignal.timeout(8000),
-            }
+            { headers: { Key: apiKey, Accept: 'application/json' } }
         );
 
         if (!res.ok) return { status: 'error', listed: false };
@@ -93,37 +84,49 @@ async function checkAbuseIpdb(ip: string): Promise<SubResult & { score?: number 
     }
 }
 
+const settle = <T,>(r: PromiseSettledResult<T>, fallback: T): T => (r.status === 'fulfilled' ? r.value : fallback);
+
 export async function POST(request: NextRequest) {
+    const rateLimited = enforceRateLimit('blocklists', request);
+    if (rateLimited) return rateLimited;
+
     try {
-        const { url, ip } = await request.json();
-        if (!url) {
-            return NextResponse.json({ success: false, error: 'عنوان URL مطلوب' }, { status: 400 });
-        }
+        const { url, ip } = await requireUrlBody<{ url: string; ip?: string }>(request);
 
-        const key = cacheKey('blocklists', `${url}|${ip || ''}`);
-        const cached = cacheGet<Record<string, unknown>>(key);
-        if (cached) {
-            return NextResponse.json(cached);
-        }
+        const result = await withCache(
+            'blocklists',
+            `${url}|${ip || ''}`,
+            async () => {
+                const [urlhaus, phishtank, abuseipdb] = await Promise.allSettled([
+                    checkUrlhaus(url),
+                    checkPhishtank(url),
+                    ip ? checkAbuseIpdb(ip) : Promise.resolve({ status: 'skipped' as const, listed: false }),
+                ]);
 
-        const [urlhaus, phishtank, abuseipdb] = await Promise.allSettled([
-            checkUrlhaus(url),
-            checkPhishtank(url),
-            ip ? checkAbuseIpdb(ip) : Promise.resolve({ status: 'skipped' as const, listed: false }),
-        ]);
+                return {
+                    success: true as const,
+                    urlhaus: settle(urlhaus, { status: 'error' as const, listed: false }),
+                    phishtank: settle(phishtank, { status: 'error' as const, listed: false }),
+                    abuseipdb: settle(abuseipdb, { status: 'error' as const, listed: false }),
+                };
+            },
+            {
+                // Cache a clean run for 15 min; a run with any sub-source error
+                // only for 60s, so a transient upstream blip doesn't get pinned
+                // in place of a real answer for the full TTL.
+                shouldCache: () => true,
+                ttlMs: (result) => {
+                    const allOk = [result.urlhaus, result.phishtank, result.abuseipdb].every((r) => r.status !== 'error');
+                    return allOk ? 15 * 60 * 1000 : 60 * 1000;
+                },
+            }
+        );
 
-        const settle = <T,>(r: PromiseSettledResult<T>, fallback: T): T => (r.status === 'fulfilled' ? r.value : fallback);
-
-        const result = {
-            success: true,
-            urlhaus: settle(urlhaus, { status: 'error' as const, listed: false }),
-            phishtank: settle(phishtank, { status: 'error' as const, listed: false }),
-            abuseipdb: settle(abuseipdb, { status: 'error' as const, listed: false }),
-        };
-
-        cacheSet(key, result);
         return NextResponse.json(result);
-    } catch {
-        return NextResponse.json({ success: false, error: 'فشل فحص القوائم السوداء' }, { status: 500 });
+    } catch (error) {
+        if (error instanceof ApiError) {
+            return NextResponse.json(error.body, { status: error.status });
+        }
+        return internalErrorResponse('فشل فحص القوائم السوداء');
     }
 }

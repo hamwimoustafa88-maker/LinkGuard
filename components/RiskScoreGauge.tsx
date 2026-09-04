@@ -2,15 +2,12 @@
 
 import { motion } from 'framer-motion';
 import type { AggregatedVerdict, ConfidenceLevel } from '@/types';
+import { DANGER_THRESHOLD, WARNING_THRESHOLD } from '@/utils/scoring';
+import { colorForScore } from '@/lib/verdictTheme';
 import { useLanguage } from './LanguageContext';
+import type { TranslationKey } from '@/utils/translations';
 
-function colorForScore(score: number): string {
-    if (score >= 70) return '#ff0055';
-    if (score >= 30) return '#ffaa00';
-    return '#00ff88';
-}
-
-const confidenceKey: Record<ConfidenceLevel, string> = {
+const confidenceKey: Record<ConfidenceLevel, TranslationKey> = {
     high: 'confidenceHigh',
     medium: 'confidenceMedium',
     low: 'confidenceLow',
@@ -28,7 +25,7 @@ interface RiskScoreGaugeProps {
 
 export default function RiskScoreGauge({ riskScore }: RiskScoreGaugeProps) {
     const { t } = useLanguage();
-    const color = colorForScore(riskScore.score);
+    const color = colorForScore(riskScore.score, DANGER_THRESHOLD, WARNING_THRESHOLD);
 
     return (
         <div className="glass-effect rounded-2xl p-8 border border-cyber-safe/30">

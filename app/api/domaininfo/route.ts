@@ -2,7 +2,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import tls from 'tls';
 import { parse } from 'tldts';
 import { assertPublicHttpUrl, SsrfBlockedError } from '@/lib/server/ssrfGuard';
-import { cacheGet, cacheSet, cacheKey } from '@/lib/server/cache';
+import { ApiError, enforceRateLimit, internalErrorResponse, requireUrlBody, ssrfBlockedResponse, withCache } from '@/lib/server/apiHelpers';
 import type { DomainInfo, SslInfo } from '@/types';
 
 export const runtime = 'nodejs';
@@ -31,8 +31,10 @@ async function fetchDomainAge(registrableDomain: string): Promise<{ status: 'ok'
 
         const createdAt = registration.eventDate;
         const ageDays = Math.floor((Date.now() - new Date(createdAt).getTime()) / (1000 * 60 * 60 * 24));
-        const registrarEntity = (data.entities || []).find((e: any) => (e.roles || []).includes('registrar'));
-        const registrar = registrarEntity?.vcardArray?.[1]?.find((f: any) => f[0] === 'fn')?.[3];
+        const entities: { roles?: string[]; vcardArray?: [string, unknown[]] }[] = data.entities || [];
+        const registrarEntity = entities.find((e) => (e.roles || []).includes('registrar'));
+        const vcardFields = registrarEntity?.vcardArray?.[1] as unknown[][] | undefined;
+        const registrar = vcardFields?.find((f) => f[0] === 'fn')?.[3] as string | undefined;
 
         return { status: 'ok', info: { ageDays, createdAt, registrar } };
     } catch {
@@ -64,10 +66,14 @@ function checkSsl(hostname: string): Promise<{ status: 'ok' | 'skipped' | 'error
                     const validTo = cert.valid_to;
                     const daysUntilExpiry = Math.floor((new Date(validTo).getTime() - Date.now()) / (1000 * 60 * 60 * 24));
 
+                    // DN fields (O, CN) are technically multi-valued in the X.509 encoding,
+                    // so newer @types/node types them as string | string[].
+                    const dnField = (v: string | string[] | undefined) => (Array.isArray(v) ? v[0] : v);
+
                     resolve({
                         status: 'ok',
                         info: {
-                            issuer: cert.issuer?.O || cert.issuer?.CN,
+                            issuer: dnField(cert.issuer?.O) || dnField(cert.issuer?.CN),
                             validFrom: cert.valid_from,
                             validTo,
                             daysUntilExpiry,
@@ -93,48 +99,58 @@ function checkSsl(hostname: string): Promise<{ status: 'ok' | 'skipped' | 'error
 }
 
 export async function POST(request: NextRequest) {
+    const rateLimited = enforceRateLimit('domaininfo', request);
+    if (rateLimited) return rateLimited;
+
     try {
-        const { url } = await request.json();
-        if (!url) {
-            return NextResponse.json({ success: false, error: 'عنوان URL مطلوب' }, { status: 400 });
-        }
+        const { url } = await requireUrlBody(request);
 
         let validated;
         try {
             validated = await assertPublicHttpUrl(url);
         } catch (err) {
             if (err instanceof SsrfBlockedError) {
-                return NextResponse.json({ success: false, error: 'رابط غير آمن', blocked: true }, { status: 400 });
+                return ssrfBlockedResponse();
             }
             throw err;
         }
 
         const hostname = validated.hostname;
-
-        const key = cacheKey('domaininfo', hostname);
-        const cached = cacheGet<Record<string, unknown>>(key);
-        if (cached) {
-            return NextResponse.json(cached);
-        }
-
         const parsed = parse(hostname);
         const registrableDomain = parsed.domain;
 
-        const [ageResult, sslResult] = await Promise.allSettled([
-            registrableDomain ? fetchDomainAge(registrableDomain) : Promise.resolve({ status: 'skipped' as const }),
-            validated.protocol === 'https:' ? checkSsl(hostname) : Promise.resolve({ status: 'skipped' as const }),
-        ]);
+        const result = await withCache(
+            'domaininfo',
+            hostname,
+            async () => {
+                const [ageResult, sslResult] = await Promise.allSettled([
+                    registrableDomain ? fetchDomainAge(registrableDomain) : Promise.resolve({ status: 'skipped' as const }),
+                    validated.protocol === 'https:' ? checkSsl(hostname) : Promise.resolve({ status: 'skipped' as const }),
+                ]);
 
-        const result = {
-            success: true,
-            domainAge: ageResult.status === 'fulfilled' ? ageResult.value : { status: 'error' },
-            ssl: sslResult.status === 'fulfilled' ? sslResult.value : { status: 'error' },
-        };
+                return {
+                    success: true as const,
+                    domainAge: ageResult.status === 'fulfilled' ? ageResult.value : { status: 'error' as const },
+                    ssl: sslResult.status === 'fulfilled' ? sslResult.value : { status: 'error' as const },
+                };
+            },
+            {
+                shouldCache: () => true,
+                // Domain age/registrar/certificate rarely change within a day, so a
+                // clean run caches for 6h. A run where either sub-check errored only
+                // caches for 60s, so a transient RDAP/TLS blip isn't pinned for 6h.
+                ttlMs: (result) => {
+                    const allOk = result.domainAge.status !== 'error' && result.ssl.status !== 'error';
+                    return allOk ? 6 * 60 * 60 * 1000 : 60 * 1000;
+                },
+            }
+        );
 
-        // Domain age/registrar/certificate rarely change within a day — cache longer.
-        cacheSet(key, result, 6 * 60 * 60 * 1000);
         return NextResponse.json(result);
     } catch (error) {
-        return NextResponse.json({ success: false, error: 'فشل جلب معلومات النطاق' }, { status: 500 });
+        if (error instanceof ApiError) {
+            return NextResponse.json(error.body, { status: error.status });
+        }
+        return internalErrorResponse('فشل جلب معلومات النطاق');
     }
 }

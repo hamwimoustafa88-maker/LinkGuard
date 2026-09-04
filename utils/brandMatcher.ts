@@ -50,20 +50,24 @@ const SUSPICIOUS_TLDS = [
 ];
 
 function levenshtein(a: string, b: string): number {
+    // Every dp[i][j] accessed below is within the (a.length+1) x (b.length+1)
+    // grid allocated on the line above, so the non-null assertions are just
+    // working around noUncheckedIndexedAccess not tracking loop bounds - not
+    // suppressing a real possibility of a hole in the matrix.
     const dp: number[][] = Array.from({ length: a.length + 1 }, () => new Array(b.length + 1).fill(0));
-    for (let i = 0; i <= a.length; i++) dp[i][0] = i;
-    for (let j = 0; j <= b.length; j++) dp[0][j] = j;
+    for (let i = 0; i <= a.length; i++) dp[i]![0] = i;
+    for (let j = 0; j <= b.length; j++) dp[0]![j] = j;
     for (let i = 1; i <= a.length; i++) {
         for (let j = 1; j <= b.length; j++) {
             const cost = a[i - 1] === b[j - 1] ? 0 : 1;
-            dp[i][j] = Math.min(
-                dp[i - 1][j] + 1,
-                dp[i][j - 1] + 1,
-                dp[i - 1][j - 1] + cost
+            dp[i]![j] = Math.min(
+                dp[i - 1]![j]! + 1,
+                dp[i]![j - 1]! + 1,
+                dp[i - 1]![j - 1]! + cost
             );
         }
     }
-    return dp[a.length][b.length];
+    return dp[a.length]![b.length]!;
 }
 
 function safeUrl(url: string): URL | null {
@@ -77,7 +81,6 @@ function safeUrl(url: string): URL | null {
 function isHomograph(hostname: string): boolean {
     const labels = hostname.split('.');
     if (labels.some(l => l.startsWith('xn--'))) return true;
-    // eslint-disable-next-line no-control-regex
     return /[^\x00-\x7F]/.test(hostname);
 }
 
@@ -99,7 +102,7 @@ function findTyposquat(registrableDomainLabel: string): { brand: BrandInfo; dist
     let best: { brand: BrandInfo; distance: number } | null = null;
     for (const brand of FAMOUS_BRANDS) {
         for (const legit of brand.legitimateDomains) {
-            const legitLabel = legit.split('.')[0];
+            const legitLabel = legit.split('.')[0] ?? legit;
             if (legitLabel.length < 4) continue; // avoid noisy short-label false positives
             if (registrableDomainLabel === legitLabel) continue;
             const distance = levenshtein(registrableDomainLabel, legitLabel);
@@ -122,7 +125,7 @@ export function analyzeBrandMismatch(url: string): PhishingAlert {
         const fullUrl = url.toLowerCase();
         const parsed = parse(hostname);
         const registrableDomain = parsed.domain;
-        const registrableLabel = registrableDomain ? registrableDomain.split('.')[0] : hostname;
+        const registrableLabel = registrableDomain ? (registrableDomain.split('.')[0] ?? hostname) : hostname;
 
         const hasSuspiciousKeyword = SUSPICIOUS_KEYWORDS.some(kw => fullUrl.includes(kw));
         const hasSuspiciousTLD = SUSPICIOUS_TLDS.some(tld => hostname.endsWith(tld));
@@ -219,7 +222,7 @@ export function analyzeUrlHeuristics(url: string): EvidenceItem[] {
     const fullUrl = url.toLowerCase();
     const parsed = parse(hostname);
     const registrableDomain = parsed.domain;
-    const registrableLabel = registrableDomain ? registrableDomain.split('.')[0] : hostname;
+    const registrableLabel = registrableDomain ? (registrableDomain.split('.')[0] ?? hostname) : hostname;
 
     if (isHomograph(hostname)) {
         evidence.push({

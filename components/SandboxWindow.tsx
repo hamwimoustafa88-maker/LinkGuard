@@ -30,7 +30,7 @@ export default function SandboxWindow({ screenshotUrl }: SandboxWindowProps) {
                         <div className="w-3 h-3 rounded-full bg-yellow-500" />
                         <div className="w-3 h-3 rounded-full bg-green-500" />
                     </div>
-                    <div className="flex-1 bg-cyber-navy/50 rounded px-3 py-1 text-sm text-gray-400 font-mono" dir="ltr">
+                    <div className="flex-1 bg-cyber-navy/50 rounded-sm px-3 py-1 text-sm text-gray-400 font-mono" dir="ltr">
                         {screenshotUrl.includes('urlscan.io') ? 'Secure Preview' : screenshotUrl}
                     </div>
                 </div>

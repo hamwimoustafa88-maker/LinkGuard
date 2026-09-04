@@ -1,4 +1,18 @@
-import { NextResponse } from 'next/server';
+import { NextRequest, NextResponse } from 'next/server';
+import { timingSafeEqual } from 'crypto';
+import { cleanKey, enforceRateLimit, fetchWithTimeout } from '@/lib/server/apiHelpers';
+
+// /status is an intentionally public live-status page (see README) - by
+// default this route's per-service detail (including which optional keys
+// aren't configured) is meant to be visible. An operator who'd rather not
+// disclose that can set HEALTH_TOKEN; unset (the default), behavior is
+// unchanged from before this gate existed. /status itself can't hold that
+// server secret, so it forwards a ?token= query param as the same header
+// this route checks (see app/status/page.tsx) - anonymous visitors without
+// it still get the redacted, aggregate view.
+export const runtime = 'nodejs';
+export const dynamic = 'force-dynamic';
+export const maxDuration = 30;
 
 interface ServiceStatus {
     status: 'online' | 'offline' | 'error' | 'no_key';
@@ -6,48 +20,39 @@ interface ServiceStatus {
     message: string;
 }
 
-// يزيل أي مسافات/أسطر جديدة من المفتاح — قيم الأسطر الجديدة غير مسموحة في HTTP headers
-function cleanKey(value: string | undefined): string {
-    return (value || '').replace(/\s+/g, '');
+interface Service {
+    name: string;
+    keyEnvVar: string;
+    check: (apiKey: string) => Promise<{ ok: boolean; message: string }>;
 }
 
-async function checkKeyedService(
-    keyEnvVar: string,
-    check: () => Promise<{ ok: boolean; message: string }>
-): Promise<ServiceStatus> {
-    if (!process.env[keyEnvVar]) {
-        return { status: 'no_key', latency: 0, message: 'مفتاح API غير مضبوط' };
-    }
-
-    const start = Date.now();
-    try {
-        const { ok, message } = await check();
-        const latency = Date.now() - start;
-        return { status: ok ? 'online' : 'error', latency, message };
-    } catch (e: any) {
-        return { status: 'offline', latency: 0, message: e.message };
-    }
-}
-
-export async function GET() {
-    const [virustotal, urlscan, safebrowsing, urlhaus, abuseipdb] = await Promise.all([
-        checkKeyedService('VIRUSTOTAL_API_KEY', async () => {
-            const res = await fetch('https://www.virustotal.com/api/v3/ip_addresses/8.8.8.8', {
-                headers: { 'x-apikey': cleanKey(process.env.VIRUSTOTAL_API_KEY) },
-                signal: AbortSignal.timeout(8000),
+const SERVICES: Service[] = [
+    {
+        name: 'virustotal',
+        keyEnvVar: 'VIRUSTOTAL_API_KEY',
+        check: async (apiKey) => {
+            const res = await fetchWithTimeout('https://www.virustotal.com/api/v3/ip_addresses/8.8.8.8', {
+                headers: { 'x-apikey': apiKey },
             });
             return { ok: res.ok, message: res.ok ? 'متصل' : `خطأ: ${res.status}` };
-        }),
-        checkKeyedService('URLSCAN_API_KEY', async () => {
-            const res = await fetch('https://urlscan.io/user/quotas/', {
-                headers: { 'API-Key': cleanKey(process.env.URLSCAN_API_KEY) },
-                signal: AbortSignal.timeout(8000),
+        },
+    },
+    {
+        name: 'urlscan',
+        keyEnvVar: 'URLSCAN_API_KEY',
+        check: async (apiKey) => {
+            const res = await fetchWithTimeout('https://urlscan.io/user/quotas/', {
+                headers: { 'API-Key': apiKey },
             });
             return { ok: res.ok, message: res.ok ? 'متصل' : `خطأ: ${res.status}` };
-        }),
-        checkKeyedService('GOOGLE_SAFE_BROWSING_API_KEY', async () => {
-            const res = await fetch(
-                `https://safebrowsing.googleapis.com/v4/threatMatches:find?key=${process.env.GOOGLE_SAFE_BROWSING_API_KEY}`,
+        },
+    },
+    {
+        name: 'safebrowsing',
+        keyEnvVar: 'GOOGLE_SAFE_BROWSING_API_KEY',
+        check: async (apiKey) => {
+            const res = await fetchWithTimeout(
+                `https://safebrowsing.googleapis.com/v4/threatMatches:find?key=${encodeURIComponent(apiKey)}`,
                 {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
@@ -60,30 +65,87 @@ export async function GET() {
                             threatEntries: [{ url: 'https://example.com' }],
                         },
                     }),
-                    signal: AbortSignal.timeout(8000),
                 }
             );
             return { ok: res.ok, message: res.ok ? 'متصل' : `خطأ: ${res.status}` };
-        }),
-        checkKeyedService('URLHAUS_AUTH_KEY', async () => {
+        },
+    },
+    {
+        name: 'urlhaus',
+        keyEnvVar: 'URLHAUS_AUTH_KEY',
+        check: async (apiKey) => {
             const form = new URLSearchParams();
             form.append('url', 'https://example.com');
-            const res = await fetch('https://urlhaus-api.abuse.ch/v1/url/', {
+            const res = await fetchWithTimeout('https://urlhaus-api.abuse.ch/v1/url/', {
                 method: 'POST',
-                headers: { 'Auth-Key': cleanKey(process.env.URLHAUS_AUTH_KEY), 'Content-Type': 'application/x-www-form-urlencoded' },
+                headers: { 'Auth-Key': apiKey, 'Content-Type': 'application/x-www-form-urlencoded' },
                 body: form,
-                signal: AbortSignal.timeout(8000),
             });
             return { ok: res.ok, message: res.ok ? 'متصل' : `خطأ: ${res.status}` };
-        }),
-        checkKeyedService('ABUSEIPDB_API_KEY', async () => {
-            const res = await fetch('https://api.abuseipdb.com/api/v2/check?ipAddress=8.8.8.8', {
-                headers: { Key: cleanKey(process.env.ABUSEIPDB_API_KEY), Accept: 'application/json' },
-                signal: AbortSignal.timeout(8000),
+        },
+    },
+    {
+        name: 'abuseipdb',
+        keyEnvVar: 'ABUSEIPDB_API_KEY',
+        check: async (apiKey) => {
+            const res = await fetchWithTimeout('https://api.abuseipdb.com/api/v2/check?ipAddress=8.8.8.8', {
+                headers: { Key: apiKey, Accept: 'application/json' },
             });
             return { ok: res.ok, message: res.ok ? 'متصل' : `خطأ: ${res.status}` };
-        }),
-    ]);
+        },
+    },
+];
 
-    return NextResponse.json({ virustotal, urlscan, safebrowsing, urlhaus, abuseipdb });
+async function checkService(service: Service): Promise<ServiceStatus> {
+    const apiKey = cleanKey(process.env[service.keyEnvVar]);
+    if (!apiKey) {
+        return { status: 'no_key', latency: 0, message: 'مفتاح API غير مضبوط' };
+    }
+
+    const start = Date.now();
+    try {
+        const { ok, message } = await service.check(apiKey);
+        return { status: ok ? 'online' : 'error', latency: Date.now() - start, message };
+    } catch (e) {
+        return { status: 'offline', latency: 0, message: e instanceof Error ? e.message : 'خطأ غير معروف' };
+    }
+}
+
+/** With HEALTH_TOKEN configured, an anonymous (or wrong-token) request only
+ * learns whether each source is reachable - not which optional keys are
+ * unconfigured, nor per-service error text/latency. */
+function redact(status: ServiceStatus): ServiceStatus {
+    return {
+        status: status.status === 'online' ? 'online' : 'offline',
+        latency: 0,
+        message: '',
+    };
+}
+
+function isAuthorized(request: NextRequest): boolean {
+    const configuredToken = cleanKey(process.env.HEALTH_TOKEN);
+    if (!configuredToken) return true; // gate not enabled - default, fully public
+
+    const presentedToken = cleanKey(request.headers.get('x-health-token') ?? undefined);
+    const a = Buffer.from(presentedToken);
+    const b = Buffer.from(configuredToken);
+    // timingSafeEqual throws on unequal-length buffers rather than returning
+    // false, and a length mismatch is itself not a secret worth protecting -
+    // the != check short-circuits before ever touching timing-sensitive
+    // comparison logic.
+    return a.length === b.length && timingSafeEqual(a, b);
+}
+
+export async function GET(request: NextRequest) {
+    const rateLimited = enforceRateLimit('health', request, { maxRequests: 20, windowMs: 5 * 60 * 1000 });
+    if (rateLimited) return rateLimited;
+
+    const authorized = isAuthorized(request);
+    const statuses = await Promise.all(SERVICES.map(checkService));
+
+    const result = Object.fromEntries(
+        SERVICES.map((service, i) => [service.name, authorized ? statuses[i] : redact(statuses[i]!)])
+    );
+
+    return NextResponse.json(result);
 }

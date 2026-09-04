@@ -9,12 +9,9 @@ Supplementary documentation and assets. The main project README lives at the
 
 | Path | Description |
 | :--- | :--- |
-| [`reports/`](reports/) | Arabic testing & fix reports (development history) · تقارير الاختبار والإصلاح بالعربية |
-| [`assets/`](assets/) | Screenshots and image assets · لقطات الشاشة والأصول |
+| [`assets/logo.png`](assets/logo.png) | Logo master (512×512). Source of truth for every PWA icon — regenerate with `node scripts/generate-icons.mjs` after changing it. · الشعار الأصلي، ومنه تُولَّد كل أيقونات التطبيق |
 
-### Reports · التقارير
-
-- [COMPREHENSIVE_TEST_REPORT_AR.md](reports/COMPREHENSIVE_TEST_REPORT_AR.md)
-- [TEST_REPORT_AR.md](reports/TEST_REPORT_AR.md)
-- [UNSHORTEN_FIX_REPORT_AR.md](reports/UNSHORTEN_FIX_REPORT_AR.md)
-- [URLSCAN_FIX_REPORT_AR.md](reports/URLSCAN_FIX_REPORT_AR.md)
+> Earlier Arabic development reports (`reports/`) were removed once their fixes
+> shipped; they remain available in the git history.
+>
+> *أُزيلت تقارير التطوير العربية بعد اعتماد إصلاحاتها، وتبقى متاحة في سجل Git.*

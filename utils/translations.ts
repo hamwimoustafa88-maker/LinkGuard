@@ -1,8 +1,11 @@
 export type Language = 'ar' | 'en';
 export type Direction = 'rtl' | 'ltr';
 
-export const translations = {
-    ar: {
+// `ar` is the source of truth for which keys exist; `en` (below) is typed
+// against it, so a key present in one language but not the other is a
+// build error instead of a key silently falling through to English/Arabic
+// at runtime (see components/LanguageContext.tsx's t()).
+const ar = {
         // Meta
         appTitle: 'LinkGuard',
         appSubtitle: 'كاشف الروابط الخبيثة',
@@ -18,12 +21,18 @@ export const translations = {
         footerCopy: '© 2026 LinkGuard - كاشف الروابط | حماية متقدمة ضد التهديدات الإلكترونية',
 
         // Status
-        statusIdle: '',
         statusUnshortening: 'جاري فك اختصار الرابط...',
         statusScanning: 'الاتصال بقواعد البيانات الأمنية...',
         statusAnalyzing: 'تحليل التهديدات المحتملة...',
         statusComplete: 'اكتمل الفحص',
         statusError: 'حدث خطأ',
+
+        // API error codes (see types/api.ts's ErrorCode)
+        errorMissingUrl: 'عنوان URL مطلوب',
+        errorSsrfBlocked: 'تم حظر هذا الرابط لأنه يشير إلى عنوان شبكة داخلي غير آمن',
+        errorRateLimited: 'عدد كبير من الطلبات، يرجى المحاولة لاحقاً',
+        errorResolveFailed: 'تعذر تتبع التحويلات لهذا الرابط',
+        errorInternal: 'حدث خطأ غير متوقع، يرجى المحاولة لاحقاً',
 
         // Verdict
         verdictSafe: 'آمن',
@@ -58,6 +67,7 @@ export const translations = {
         vtReport: 'تقرير VirusTotal',
         viewOriginalReport: 'عرض التقرير الأصلي',
         cleanMessage: 'نظيف: لم يبلغ أي محرك فحص عن مشاكل.',
+        engineDetailUnavailable: 'رُصدت مؤشرات خطر، لكن تفاصيل محركات الفحص غير متاحة حالياً.',
 
         // Verification Steps
         stepUnshorten: 'فك الرابط المختصر',
@@ -100,7 +110,6 @@ export const translations = {
         linkedin: 'LinkedIn Profile',
 
         // New Features
-        threatsDetected: 'تهديدات تم كشفها اليوم',
         poweredByAI: 'مدعوم بالذكاء الاصطناعي',
         shareWhatsApp: 'مشاركة النتيجة عبر واتساب',
         shareTextSafe: '✅ هذا الرابط آمن بنسبة {score}% وفقاً لفحص LinkGuard',
@@ -169,8 +178,11 @@ export const translations = {
         installLater: 'لاحقاً',
         installIosStep1: 'اضغط زر المشاركة',
         installIosStep2: 'ثم اختر "إضافة إلى الشاشة الرئيسية"',
-    },
-    en: {
+} as const;
+
+export type TranslationKey = keyof typeof ar;
+
+const en: Record<TranslationKey, string> = {
         // Meta
         appTitle: 'LinkGuard',
         appSubtitle: 'Malicious Link Detector',
@@ -186,12 +198,18 @@ export const translations = {
         footerCopy: '© 2026 LinkGuard - Link Detector | Advanced protection against cyber threats',
 
         // Status
-        statusIdle: '',
         statusUnshortening: 'Unshortening URL...',
         statusScanning: 'Connecting to security databases...',
         statusAnalyzing: 'Analyzing potential threats...',
         statusComplete: 'Scan Complete',
         statusError: 'An error occurred',
+
+        // API error codes (see types/api.ts's ErrorCode)
+        errorMissingUrl: 'A URL is required',
+        errorSsrfBlocked: 'This link was blocked because it points to an unsafe internal network address',
+        errorRateLimited: 'Too many requests, please try again later',
+        errorResolveFailed: 'Could not follow the redirects for this link',
+        errorInternal: 'An unexpected error occurred, please try again later',
 
         // Verdict
         verdictSafe: 'Safe',
@@ -226,6 +244,7 @@ export const translations = {
         vtReport: 'VirusTotal Report',
         viewOriginalReport: 'View Original Report',
         cleanMessage: 'Clean: No scanning engine reported issues.',
+        engineDetailUnavailable: 'Risk indicators were detected, but per-engine detail is unavailable right now.',
 
         // Verification Steps
         stepUnshorten: 'Unshorten URL',
@@ -268,7 +287,6 @@ export const translations = {
         linkedin: 'LinkedIn Profile',
 
         // New Features
-        threatsDetected: 'Threats Detected Today',
         poweredByAI: 'Powered by AI',
         shareWhatsApp: 'Share Result on WhatsApp',
         shareTextSafe: '✅ This link is {score}% Safe according to LinkGuard scan',
@@ -337,5 +355,6 @@ export const translations = {
         installLater: 'Later',
         installIosStep1: 'Tap the Share button',
         installIosStep2: 'Then choose "Add to Home Screen"',
-    }
 };
+
+export const translations: Record<Language, Record<TranslationKey, string>> = { ar, en };

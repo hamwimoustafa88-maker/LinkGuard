@@ -1,6 +1,6 @@
 <div align="center">
 
-<img src="Logo.png" alt="LinkGuard Logo" width="140" />
+<img src="docs/assets/logo.png" alt="LinkGuard Logo" width="140" />
 
 # LinkGuard 🛡️
 
@@ -10,13 +10,16 @@
 
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
 [![PRs Welcome](https://img.shields.io/badge/PRs-welcome-brightgreen.svg)](#-contributing--المساهمة)
-[![Next.js](https://img.shields.io/badge/Next.js-14-000000?logo=next.js&logoColor=white)](https://nextjs.org/)
+[![Next.js](https://img.shields.io/badge/Next.js-16-000000?logo=next.js&logoColor=white)](https://nextjs.org/)
 [![TypeScript](https://img.shields.io/badge/TypeScript-5-3178C6?logo=typescript&logoColor=white)](https://www.typescriptlang.org/)
-[![Tailwind CSS](https://img.shields.io/badge/Tailwind_CSS-3-38B2AC?logo=tailwind-css&logoColor=white)](https://tailwindcss.com/)
+[![Tailwind CSS](https://img.shields.io/badge/Tailwind_CSS-4-38B2AC?logo=tailwind-css&logoColor=white)](https://tailwindcss.com/)
 [![Tested with Vitest](https://img.shields.io/badge/Tested_with-Vitest-6E9F18?logo=vitest&logoColor=white)](https://vitest.dev/)
 [![PWA Ready](https://img.shields.io/badge/PWA-installable-5A0FC8?logo=pwa&logoColor=white)](#-key-features--المميزات-الرئيسية)
 
 [English](#overview) · [العربية](#نظرة-عامة) · [Quick Start](#-quick-start--البدء-السريع) · [Contributing](#-contributing--المساهمة)
+
+<img src="docs/assets/screenshot-home.png" alt="LinkGuard scan screen" width="49%" />
+<img src="docs/assets/screenshot-status.png" alt="LinkGuard live status page" width="49%" />
 
 </div>
 
@@ -73,9 +76,9 @@ optional — a missing or failing source simply lowers confidence instead of bre
 
 | Layer | Technology |
 | :--- | :--- |
-| **Framework** | [Next.js 14](https://nextjs.org/) (App Router) — full-stack UI + API routes |
+| **Framework** | [Next.js 16](https://nextjs.org/) (App Router, React 19) — full-stack UI + API routes |
 | **Language** | [TypeScript 5](https://www.typescriptlang.org/) |
-| **Styling** | [Tailwind CSS 3](https://tailwindcss.com/) + [framer-motion](https://www.framer.com/motion/) |
+| **Styling** | [Tailwind CSS 4](https://tailwindcss.com/) + [framer-motion](https://www.framer.com/motion/) |
 | **Icons / QR** | [lucide-react](https://lucide.dev/) · [html5-qrcode](https://github.com/mebjas/html5-qrcode) |
 | **Domain parsing** | [tldts](https://github.com/remusao/tldts) |
 | **Testing** | [Vitest](https://vitest.dev/) + `@vitest/coverage-v8`, CI via GitHub Actions |
@@ -83,11 +86,41 @@ optional — a missing or failing source simply lowers confidence instead of bre
 
 ---
 
+## 🏗️ Architecture · البنية
+
+A scan runs through four stages, each one degrading independently rather than failing the
+whole request:
+
+1. **Resolve** ([`app/api/resolve`](app/api/resolve/route.ts)) — follows the redirect chain
+   itself (up to 8 hops), validating every hop against [`lib/server/ssrfGuard.ts`](lib/server/ssrfGuard.ts)
+   before it's fetched.
+2. **Scan** ([`lib/scan.ts`](lib/scan.ts)) — fans out to VirusTotal, urlscan.io, Google Safe
+   Browsing, the blocklist trio (URLhaus/PhishTank/AbuseIPDB), and domain/SSL intelligence
+   **in parallel**; a slow or failing source only lowers confidence, never blocks the others.
+3. **Analyze** ([`utils/brandMatcher.ts`](utils/brandMatcher.ts)) — local heuristics
+   (typosquatting, homograph/Punycode, subdomain impersonation) run client-side, no network
+   or API key required.
+4. **Score** ([`utils/scoring.ts`](utils/scoring.ts)) — every signal becomes a weighted
+   `EvidenceItem`; `aggregateVerdict()` sums the points into a 0–100 score, floors it for any
+   authoritative match (e.g. a Safe Browsing hit), and derives a verdict + confidence level
+   from how many sources actually responded.
+
+Every external route shares [`lib/server/apiHelpers.ts`](lib/server/apiHelpers.ts) for
+timeouts, per-route rate limiting, and result caching, so a new source only needs to implement
+its own request/response mapping.
+
+*تمرّ عملية الفحص بأربع مراحل، كل واحدة تتدهور بشكل مستقل دون إفشال الطلب كاملاً: **الحل**
+(تتبّع التحويلات محلياً مع حماية SSRF)، **الفحص** (استعلام متوازٍ من كل المصادر الخارجية)،
+**التحليل** (تحليلات محلية دون شبكة)، ثم **التقييم** (محرك موزون ينتج الدرجة والحكم ومستوى
+الثقة).*
+
+---
+
 ## 🚀 Quick Start · البدء السريع
 
 ### Prerequisites · المتطلبات المسبقة
 
-- **Node.js** `18+` (LTS recommended)
+- **Node.js** `20.9+` (LTS recommended)
 - **npm** (ships with Node) — or your preferred package manager
 
 > All threat-intelligence API keys are **optional**. LinkGuard runs out of the box and degrades
@@ -124,6 +157,7 @@ npm run lint       # Run ESLint
 npm run typecheck  # Type-check with tsc --noEmit
 npm test           # Run the Vitest test suite
 npm run test:watch # Run tests in watch mode
+npm run test:coverage # Run tests with a coverage report
 ```
 
 ---
@@ -146,6 +180,18 @@ reports lower confidence.
 | `URLHAUS_AUTH_KEY` | [URLhaus (abuse.ch)](https://urlhaus.abuse.ch/api/) | Free auth key (account) |
 | `PHISHTANK_APP_KEY` | [PhishTank](https://www.phishtank.com/api_register.php) | Free app key (registration often closed) |
 | `ABUSEIPDB_API_KEY` | [AbuseIPDB](https://www.abuseipdb.com/register) | 1,000 checks/day |
+| `HEALTH_TOKEN` | *(self-chosen)* | — restricts the detail `/api/health` and `/status` reveal anonymously; see below |
+
+`/status` is a deliberately public live-status page. Left unset (the default), it stays fully
+public. If you'd rather not disclose *which* optional keys are configured, set `HEALTH_TOKEN`.
+`/api/health` then redacts its response for anonymous callers down to an aggregate
+online/offline reading per source. `/status` itself can't hold that server secret, so visit
+`/status?token=<value>` to see the full detail there — the page forwards it as the
+`x-health-token` header the API checks.
+
+*`/status` صفحة حالة علنية عمداً. إن تُرك `HEALTH_TOKEN` فارغاً (الافتراضي) تبقى الصفحة علنية
+بالكامل. لإخفاء تفاصيل المفاتيح المُفعّلة عن الزوار المجهولين، عيّن القيمة، ثم افتح
+`/status?token=<القيمة>` لعرض التفاصيل الكاملة على الصفحة نفسها.*
 
 > [!WARNING]
 > Never commit `.env.local` or real API keys to version control. It is already covered by
@@ -168,7 +214,7 @@ Contributions are what make the open-source community amazing — **all PRs are 
 
 Please keep the bilingual (AR/EN) UX and the graceful-degradation contract intact — a new
 source should never be able to break an existing scan. See [CONTRIBUTING.md](CONTRIBUTING.md)
-for the full guide.
+for the full guide, and [CHANGELOG.md](CHANGELOG.md) for the notable-changes history.
 
 ---
 
