@@ -69,10 +69,11 @@ LinkGuard/
 │   ├── api/            # Backend routes (resolve, virustotal, safebrowsing, domaininfo, …)
 │   └── status/         # Live source-health page
 ├── components/         # React UI components
+│   └── verdict/        # VerdictDashboard's sub-components (header, gauges, engine list)
 ├── hooks/              # React hooks (useScan, …)
 ├── lib/                # Shared server/client helpers — scan.ts, verdictTheme.ts, server/apiHelpers.ts, …
 ├── utils/              # Core logic — scoring.ts, brandMatcher.ts, translations.ts, …
-├── types/              # TypeScript type definitions
+├── types/              # TypeScript type definitions (index.ts: domain types, api.ts: API response shapes)
 ├── __tests__/          # Vitest test suite
 ├── scripts/            # Build/dev scripts (PWA icon generation)
 ├── public/             # Static assets
