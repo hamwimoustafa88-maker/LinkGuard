@@ -1,0 +1,7 @@
+<?xml version='1.0' encoding='utf-8'?>
+<resources>
+    <string name="app_name">LinkGuard</string>
+    <string name="title_activity_main">LinkGuard</string>
+    <string name="package_name">dev.scouthub.linkguard</string>
+    <string name="custom_url_scheme">dev.scouthub.linkguard</string>
+</resources>

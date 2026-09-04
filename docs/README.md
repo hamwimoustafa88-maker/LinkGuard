@@ -10,6 +10,7 @@ Supplementary documentation and assets. The main project README lives at the
 | Path | Description |
 | :--- | :--- |
 | [`assets/logo.png`](assets/logo.png) | Logo master (512×512). Source of truth for every PWA icon — regenerate with `node scripts/generate-icons.mjs` after changing it. · الشعار الأصلي، ومنه تُولَّد كل أيقونات التطبيق |
+| [`ANDROID_DEPLOYMENT.md`](ANDROID_DEPLOYMENT.md) | Building and shipping the Capacitor Android app (.aab / release .apk) to Google Play. · دليل بناء ونشر تطبيق أندرويد (Capacitor) على Google Play |
 
 > Earlier Arabic development reports (`reports/`) were removed once their fixes
 > shipped; they remain available in the git history.

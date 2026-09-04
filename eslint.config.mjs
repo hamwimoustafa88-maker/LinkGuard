@@ -4,7 +4,17 @@ import nextTypescript from 'eslint-config-next/typescript';
 /** @type {import('eslint').Linter.Config[]} */
 const config = [
     {
-        ignores: ['.next/**', 'node_modules/**', 'coverage/**', '.agents/**'],
+        ignores: [
+            '.next/**',
+            'node_modules/**',
+            'coverage/**',
+            '.agents/**',
+            // Generated/native - not app source. android/ especially embeds a
+            // full copy of the built web bundle at
+            // android/app/src/main/assets/public/ on every `cap sync`.
+            'out/**',
+            'android/**',
+        ],
     },
     ...nextCoreWebVitals,
     ...nextTypescript,

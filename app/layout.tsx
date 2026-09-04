@@ -37,6 +37,10 @@ export const viewport: Viewport = {
     width: 'device-width',
     initialScale: 1,
     themeColor: '#0a0e27',
+    // Android 15+ (targetSdk 36) forces edge-to-edge with no opt-out, so
+    // content draws behind the status/navigation bars unless it opts in to
+    // the safe-area insets below (see .safe-area-shell in globals.css).
+    viewportFit: 'cover',
 };
 
 export default function RootLayout({

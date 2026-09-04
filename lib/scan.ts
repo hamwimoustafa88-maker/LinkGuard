@@ -7,6 +7,7 @@ import { ScanStatus, VerdictType, type ScanResult, type EvidenceItem, type Sourc
 import type { ErrorCode } from '@/types/api';
 import { analyzeBrandMismatch, analyzeUrlHeuristics } from '@/utils/brandMatcher';
 import { aggregateVerdict, scoreVirusTotal, scoreSafeBrowsing, scoreBlocklists, scoreDomainAge, scoreSsl, scoreRedirects, type BlocklistsResult } from '@/utils/scoring';
+import { apiUrl } from '@/lib/apiBase';
 
 export type PostFn = (url: string, body: unknown) => Promise<Record<string, unknown> & { success?: boolean }>;
 
@@ -26,7 +27,7 @@ export interface RunScanOptions {
 }
 
 export async function postJson(url: string, body: unknown): Promise<Record<string, unknown> & { success?: boolean }> {
-    const res = await fetch(url, {
+    const res = await fetch(apiUrl(url), {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(body),
