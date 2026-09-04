@@ -34,7 +34,7 @@
     "next": "16.3.4",
     "react": "19.2.8",
     "react-dom": "19.2.8",
-    "tldts": "^6.1.0"
+    "tldts": "^7.4.11"
   },
   "devDependencies": {
     "@capacitor/assets": "^3.0.5",
