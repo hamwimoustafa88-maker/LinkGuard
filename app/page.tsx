@@ -9,6 +9,7 @@ import StatusTerminal from '@/components/StatusTerminal';
 import VerdictDashboard from '@/components/VerdictDashboard';
 import EducationFooter from '@/components/EducationFooter';
 import LanguageToggle from '@/components/LanguageToggle';
+import GitHubLink from '@/components/GitHubLink';
 import ScanHistory from '@/components/ScanHistory';
 import ShareTargetListener from '@/components/ShareTargetListener';
 import { useLanguage } from '@/components/LanguageContext';
@@ -41,7 +42,8 @@ function HomeContent() {
 
             <div className="relative z-10 container mx-auto px-4 py-8 flex-1 flex flex-col">
                 {/* Navbar / Top Bar */}
-                <div className="flex justify-end items-center mb-8">
+                <div className="flex justify-end items-center gap-3 mb-8">
+                    <GitHubLink />
                     <LanguageToggle />
                 </div>
 
