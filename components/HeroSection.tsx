@@ -5,6 +5,7 @@ import { motion } from 'framer-motion';
 import { Search, Shield, Camera } from 'lucide-react';
 import QrScannerModal from './QrScannerModal';
 import { useLanguage } from './LanguageContext';
+import { useAndroidBackButton } from '@/hooks/useAndroidBackButton';
 
 interface HeroSectionProps {
     onScan: (url: string) => void;
@@ -16,6 +17,16 @@ export default function HeroSection({ onScan, isScanning, isCompact = false }: H
     const { t } = useLanguage();
     const [url, setUrl] = useState('');
     const [isQrModalOpen, setIsQrModalOpen] = useState(false);
+
+    // Hardware back button on Android: close the QR scanner first if it's
+    // open, instead of exiting the app or navigating away mid-scan.
+    useAndroidBackButton(() => {
+        if (isQrModalOpen) {
+            setIsQrModalOpen(false);
+            return true;
+        }
+        return false;
+    });
 
     const handleSubmit = (e: React.FormEvent) => {
         e.preventDefault();

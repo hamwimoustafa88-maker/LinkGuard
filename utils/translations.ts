@@ -178,6 +178,11 @@ const ar = {
         installLater: 'لاحقاً',
         installIosStep1: 'اضغط زر المشاركة',
         installIosStep2: 'ثم اختر "إضافة إلى الشاشة الرئيسية"',
+
+        // Offline overlay (Android app only - components/OfflineOverlay.tsx)
+        offlineTitle: 'لا يوجد اتصال بالإنترنت',
+        offlineDesc: 'يحتاج LinkGuard إلى اتصال بالإنترنت للفحص. تحقق من الشبكة وحاول مجدداً.',
+        offlineRetry: 'إعادة المحاولة',
 } as const;
 
 export type TranslationKey = keyof typeof ar;
@@ -355,6 +360,11 @@ const en: Record<TranslationKey, string> = {
         installLater: 'Later',
         installIosStep1: 'Tap the Share button',
         installIosStep2: 'Then choose "Add to Home Screen"',
+
+        // Offline overlay (Android app only - components/OfflineOverlay.tsx)
+        offlineTitle: 'No Internet Connection',
+        offlineDesc: 'LinkGuard needs an internet connection to scan links. Check your network and try again.',
+        offlineRetry: 'Retry',
 };
 
 export const translations: Record<Language, Record<TranslationKey, string>> = { ar, en };

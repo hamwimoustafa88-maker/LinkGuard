@@ -9,14 +9,18 @@ import VerdictDashboard from '@/components/VerdictDashboard';
 import EducationFooter from '@/components/EducationFooter';
 import LanguageToggle from '@/components/LanguageToggle';
 import ScanHistory from '@/components/ScanHistory';
+import ShareTargetListener from '@/components/ShareTargetListener';
 import { useLanguage } from '@/components/LanguageContext';
 import { useScan } from '@/hooks/useScan';
+import { usePullToRefresh } from '@/hooks/usePullToRefresh';
 import { ScanStatus } from '@/types';
 
 function HomeContent() {
     const { t } = useLanguage();
     const searchParams = useSearchParams();
     const { scanResult, scan } = useScan();
+
+    usePullToRefresh();
 
     useEffect(() => {
         const urlParam = searchParams.get('url');
@@ -28,6 +32,8 @@ function HomeContent() {
 
     return (
         <main className="min-h-screen relative overflow-hidden flex flex-col">
+            <ShareTargetListener onUrl={scan} />
+
             {/* Background effects */}
             <div className="fixed inset-0 bg-linear-to-br from-cyber-dark via-cyber-navy to-cyber-dark" />
             <div className="fixed inset-0 bg-radial-[at_top] from-cyan-900/20 via-transparent to-transparent" />

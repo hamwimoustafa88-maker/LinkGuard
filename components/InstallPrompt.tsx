@@ -3,6 +3,7 @@
 import { useEffect, useState, useCallback } from 'react';
 import { AnimatePresence, motion } from 'framer-motion';
 import { Download, Share, X, ShieldCheck } from 'lucide-react';
+import { Capacitor } from '@capacitor/core';
 import { useLanguage } from './LanguageContext';
 
 const DISMISS_KEY = 'linkguard.pwa.dismissed';
@@ -46,6 +47,8 @@ export default function InstallPrompt() {
     const [showIosInstructions, setShowIosInstructions] = useState(false);
 
     useEffect(() => {
+        // "Install" is meaningless inside an already-installed native app.
+        if (Capacitor.isNativePlatform()) return;
         if (isStandalone() || isDismissedRecently()) return;
 
         if (isIos()) {

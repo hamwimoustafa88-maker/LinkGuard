@@ -2,8 +2,10 @@
 
 import { useEffect, useRef, useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { X, Camera, AlertTriangle } from 'lucide-react';
+import { X, Camera as CameraIcon, AlertTriangle } from 'lucide-react';
 import { Html5Qrcode } from 'html5-qrcode';
+import { Capacitor } from '@capacitor/core';
+import { Camera } from '@capacitor/camera';
 
 interface QrScannerModalProps {
     isOpen: boolean;
@@ -20,6 +22,21 @@ export default function QrScannerModal({ isOpen, onClose, onScanSuccess }: QrSca
     const startScanner = async () => {
         try {
             setError(null);
+
+            // Inside the Capacitor WebView, the getUserMedia() call below
+            // still triggers Android's real runtime permission dialog (via
+            // Capacitor's bridge), but only once the CAMERA permission is
+            // declared in AndroidManifest.xml. Asking through @capacitor/
+            // camera first lets us show our own localized message on
+            // denial, instead of surfacing getUserMedia's generic error.
+            if (Capacitor.isNativePlatform()) {
+                const { camera } = await Camera.requestPermissions({ permissions: ['camera'] });
+                if (camera !== 'granted' && camera !== 'limited') {
+                    setError('تم رفض إذن الكاميرا. يمكنك السماح به من إعدادات التطبيق، أو لصق الرابط يدوياً بدلاً من ذلك.');
+                    return;
+                }
+            }
+
             const scanner = new Html5Qrcode('qr-reader');
             scannerRef.current = scanner;
 
@@ -133,7 +150,7 @@ export default function QrScannerModal({ isOpen, onClose, onScanSuccess }: QrSca
                         {/* Header */}
                         <div className="text-center mb-6">
                             <div className="flex items-center justify-center gap-3 mb-3">
-                                <Camera className="w-8 h-8 text-cyber-safe" />
+                                <CameraIcon className="w-8 h-8 text-cyber-safe" />
                                 <h2 className="text-3xl font-bold text-cyber-glow">مسح رمز QR</h2>
                             </div>
                             <p className="text-gray-400">وجّه الكاميرا نحو رمز QR لفحصه</p>

@@ -5,6 +5,7 @@ import { useSearchParams } from 'next/navigation';
 import { motion } from 'framer-motion';
 import { Shield, Server, Activity, ArrowRight, RefreshCw, CheckCircle, XCircle, AlertTriangle, type LucideIcon } from 'lucide-react';
 import Link from 'next/link';
+import { apiUrl } from '@/lib/apiBase';
 
 interface ServiceStatus {
     status: 'online' | 'offline' | 'error' | 'no_key' | 'unknown';
@@ -100,7 +101,7 @@ function StatusPageContent() {
     const checkSystem = async () => {
         setLoading(true);
         try {
-            const res = await fetch('/api/health', {
+            const res = await fetch(apiUrl('/api/health'), {
                 headers: token ? { 'x-health-token': token } : undefined,
             });
             const data = await res.json();
