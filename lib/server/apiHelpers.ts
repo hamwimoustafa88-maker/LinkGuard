@@ -56,7 +56,7 @@ export async function requireUrlBody<T extends { url: string }>(request: NextReq
  * with `status: 'ok'` are cached, so a transient upstream error or timeout
  * doesn't get pinned in place of a real answer for the full TTL - pass
  * `shouldCache` to override (e.g. to also cache a deliberate 'skipped'). */
-export async function withCache<T extends Record<string, unknown>>(
+export async function withCache<T>(
     prefix: string,
     urlKey: string,
     compute: () => Promise<T>,
@@ -65,7 +65,12 @@ export async function withCache<T extends Record<string, unknown>>(
         shouldCache?: (result: T) => boolean;
     } = {}
 ): Promise<T> {
-    const shouldCache = options.shouldCache ?? ((result: T) => result.status === 'ok');
+    // Routes whose result has no top-level `status` (blocklists, domaininfo)
+    // always pass their own shouldCache, so this default only needs to work
+    // structurally for the ones that rely on it (virustotal, urlscan,
+    // safebrowsing) - asserted rather than constrained on T so every route's
+    // actual result shape (which vary a lot) can flow through unconstrained.
+    const shouldCache = options.shouldCache ?? ((result: T) => (result as { status?: string }).status === 'ok');
     const key = cacheKey(prefix, urlKey);
     const cached = cacheGet<T>(key);
     if (cached) return cached;
@@ -99,6 +104,13 @@ const SSRF_BLOCKED_MESSAGE = 'تم حظر هذا الرابط لأنه يشير 
 export function ssrfBlockedResponse(): NextResponse {
     const body: ErrorResponse = { success: false, code: 'ssrf_blocked', error: SSRF_BLOCKED_MESSAGE, blocked: true };
     return NextResponse.json(body, { status: 400 });
+}
+
+/** Standard response for a route's catch-all (an error that wasn't an
+ * ApiError or an SsrfBlockedError - i.e. genuinely unexpected). */
+export function internalErrorResponse(message: string): NextResponse {
+    const body: ErrorResponse = { success: false, code: 'internal', error: message };
+    return NextResponse.json(body, { status: 500 });
 }
 
 /** Per-route rate limiting. Bucketed as `${routeName}:${clientId}` so hitting

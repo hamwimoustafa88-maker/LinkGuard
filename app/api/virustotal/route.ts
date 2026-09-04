@@ -1,8 +1,17 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { ApiError, cleanKey, enforceRateLimit, fetchWithTimeout, pollUntil, requireUrlBody, withCache } from '@/lib/server/apiHelpers';
+import type { SourceResponse } from '@/types/api';
+import type { VTStats, ScanResult } from '@/types';
 
 export const runtime = 'nodejs';
 export const maxDuration = 60;
+
+type VirusTotalResult = SourceResponse & {
+    stats?: VTStats;
+    vtEngines?: ScanResult['vtEngines'];
+    vtUrlMeta?: ScanResult['vtUrlMeta'];
+    scanId?: string;
+};
 
 const FETCH_TIMEOUT_MS = 15000;
 const POLL_ATTEMPTS = 12;
@@ -26,7 +35,7 @@ export async function POST(request: NextRequest) {
     }
 }
 
-async function scanUrl(url: string) {
+async function scanUrl(url: string): Promise<VirusTotalResult> {
     const apiKey = cleanKey(process.env.VIRUSTOTAL_API_KEY);
     if (!apiKey) {
         return { success: true, status: 'skipped' as const };
@@ -74,8 +83,11 @@ async function scanUrl(url: string) {
     }
 
     const stats = completed.attributes.stats;
-    let vtEngines: Record<string, unknown> = completed.attributes.results;
-    let vtUrlMeta: Record<string, unknown> | undefined;
+    // VirusTotal's own response shape, trusted structurally rather than
+    // fully validated - same trust boundary as the rest of this route's
+    // untyped analysisData/urlData JSON.
+    let vtEngines: NonNullable<VirusTotalResult['vtEngines']> = completed.attributes.results;
+    let vtUrlMeta: VirusTotalResult['vtUrlMeta'];
     let scanId = analysisId;
 
     if (completed.meta?.url_info?.id) {

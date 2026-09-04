@@ -60,13 +60,40 @@ describe('GET /api/health', () => {
         expect(data.virustotal.latency).toBeGreaterThanOrEqual(0);
     });
 
-    it('still redacts with a wrong token', async () => {
+    it('redacts with a wrong token of a different length than the configured one', async () => {
         process.env.HEALTH_TOKEN = 'secret-token';
         ({ GET } = await import('@/app/api/health/route'));
 
         const res = await GET(request({ 'x-health-token': 'wrong' }));
         const data = await res.json();
 
+        expect(res.status).toBe(200); // the length mismatch is handled, not thrown
+        expect(data.virustotal.message).toBe('');
+    });
+
+    it('redacts with a wrong token of the same length as the configured one', async () => {
+        // Exercises the actual timingSafeEqual comparison path, not just the
+        // length pre-check.
+        process.env.HEALTH_TOKEN = 'secret-token';
+        ({ GET } = await import('@/app/api/health/route'));
+
+        const res = await GET(request({ 'x-health-token': 'wrong-tokenn' })); // same length, 12 chars
+        const data = await res.json();
+
+        expect(res.status).toBe(200);
+        expect(data.virustotal.message).toBe('');
+    });
+
+    it('redacts with no token header at all', async () => {
+        process.env.HEALTH_TOKEN = 'secret-token';
+        process.env.VIRUSTOTAL_API_KEY = 'key';
+        ({ GET } = await import('@/app/api/health/route'));
+
+        const res = await GET(request());
+        const data = await res.json();
+
+        expect(res.status).toBe(200);
+        expect(data.virustotal.status).toBe('online');
         expect(data.virustotal.message).toBe('');
     });
 

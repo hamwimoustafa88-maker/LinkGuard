@@ -2,6 +2,8 @@ import { defineConfig } from 'vitest/config';
 import react from '@vitejs/plugin-react';
 import path from 'path';
 
+const alias = { '@': path.resolve(__dirname, './') };
+
 export default defineConfig({
     test: {
         globals: true,
@@ -16,10 +18,7 @@ export default defineConfig({
             include: ['lib/**', 'utils/**', 'app/api/**'],
             // Set to the measured baseline (a few points of margin below the
             // actual run) rather than an aspirational number - this is a
-            // ratchet against regression, not a target. Four routes
-            // (blocklists/domaininfo/safebrowsing/urlscan) have no dedicated
-            // test file yet and sit at 0%, which is most of the gap between
-            // this and utils/lib/server's 80-95% - a natural next PR.
+            // ratchet against regression, not a target.
             thresholds: {
                 statements: 65,
                 branches: 58,
@@ -32,9 +31,12 @@ export default defineConfig({
         // node; a handful render components and need a DOM. Keeping them
         // split means the majority of the suite never pays jsdom's setup
         // cost, and a *.test.ts file never accidentally needs a DOM stub.
+        // Each project is an independent Vite config and does not inherit
+        // resolve/plugins from this top-level object, so `alias` is repeated
+        // per project rather than declared once at the root.
         projects: [
             {
-                resolve: { alias: { '@': path.resolve(__dirname, './') } },
+                resolve: { alias },
                 test: {
                     name: 'node',
                     environment: 'node',
@@ -43,7 +45,7 @@ export default defineConfig({
             },
             {
                 plugins: [react()],
-                resolve: { alias: { '@': path.resolve(__dirname, './') } },
+                resolve: { alias },
                 test: {
                     name: 'dom',
                     environment: 'jsdom',
@@ -52,10 +54,5 @@ export default defineConfig({
                 },
             },
         ],
-    },
-    resolve: {
-        alias: {
-            '@': path.resolve(__dirname, './'),
-        },
     },
 });

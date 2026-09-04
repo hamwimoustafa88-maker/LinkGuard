@@ -1,6 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { ApiError, cleanKey, enforceRateLimit, fetchWithTimeout, requireUrlBody, withCache } from '@/lib/server/apiHelpers';
-import type { ErrorResponse } from '@/types/api';
+import { ApiError, cleanKey, enforceRateLimit, fetchWithTimeout, internalErrorResponse, requireUrlBody, withCache } from '@/lib/server/apiHelpers';
 
 export const runtime = 'nodejs';
 export const maxDuration = 20;
@@ -128,7 +127,6 @@ export async function POST(request: NextRequest) {
         if (error instanceof ApiError) {
             return NextResponse.json(error.body, { status: error.status });
         }
-        const body: ErrorResponse = { success: false, code: 'internal', error: 'فشل فحص القوائم السوداء' };
-        return NextResponse.json(body, { status: 500 });
+        return internalErrorResponse('فشل فحص القوائم السوداء');
     }
 }

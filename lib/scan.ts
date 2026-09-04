@@ -33,16 +33,17 @@ export async function postJson(url: string, body: unknown): Promise<Record<strin
         signal: AbortSignal.timeout(60000),
     });
 
-    // A non-2xx response usually means an HTML error page or an empty body,
-    // neither of which is valid JSON - surface a clear failure instead of
-    // letting res.json() throw an opaque "Unexpected token" error.
-    if (!res.ok) {
-        return { success: false, error: `HTTP ${res.status}` };
-    }
+    // Every app/api/* route returns a well-formed ErrorResponse JSON body
+    // (with a `code`) on its non-2xx paths too - missing_url is 400,
+    // ssrf_blocked 400, rate_limited 429, resolve_failed 502, internal 500.
+    // Parse the body regardless of status; only synthesize a failure here
+    // for the case those routes can't produce: a response that isn't JSON
+    // at all (a proxy/edge error page, an empty body, a truly unreachable
+    // deployment) - the one case res.json() itself throws.
     try {
         return await res.json();
     } catch {
-        return { success: false, error: 'Invalid JSON response' };
+        return { success: false, code: 'internal', error: `HTTP ${res.status}` };
     }
 }
 
@@ -105,8 +106,10 @@ export async function runScan(url: string, options: RunScanOptions): Promise<Sca
     const { post, fallbackErrorMessage, translateError, onProgress } = options;
 
     const progress = (partial: Partial<ScanResult>) => onProgress?.(partial);
-    const messageFor = (code: ErrorCode | undefined, rawMessage: string | undefined) =>
-        (code && translateError?.(code)) || rawMessage || fallbackErrorMessage;
+    const messageFor = (code: ErrorCode | undefined, rawMessage: string | undefined) => {
+        const translated = code ? translateError?.(code) : undefined;
+        return translated ?? rawMessage ?? fallbackErrorMessage;
+    };
 
     progress({ status: ScanStatus.UNSHORTENING, verdict: VerdictType.UNKNOWN, originalUrl: url });
 

@@ -1,6 +1,7 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, Suspense } from 'react';
+import { useSearchParams } from 'next/navigation';
 import { motion } from 'framer-motion';
 import { Shield, Server, Activity, ArrowRight, RefreshCw, CheckCircle, XCircle, AlertTriangle, type LucideIcon } from 'lucide-react';
 import Link from 'next/link';
@@ -85,15 +86,23 @@ function StatusCard({ name, service, icon: Icon }: { name: string; service: Serv
     );
 }
 
-export default function StatusPage() {
+function StatusPageContent() {
     const [status, setStatus] = useState<HealthData | null>(null);
     const [loading, setLoading] = useState(false);
     const [lastUpdated, setLastUpdated] = useState<string | null>(null);
+    // If the operator has set HEALTH_TOKEN, /api/health redacts its response
+    // for anonymous callers - this page can't hold that server secret, but a
+    // visitor who has the link (e.g. /status?token=...) can pass it through
+    // as a header, matching the token via the same-origin fetch below rather
+    // than exposing it in a way a third party could intercept it from here.
+    const token = useSearchParams().get('token');
 
     const checkSystem = async () => {
         setLoading(true);
         try {
-            const res = await fetch('/api/health');
+            const res = await fetch('/api/health', {
+                headers: token ? { 'x-health-token': token } : undefined,
+            });
             const data = await res.json();
             setStatus(data);
             setLastUpdated(new Date().toLocaleTimeString('ar-EG'));
@@ -106,7 +115,8 @@ export default function StatusPage() {
 
     useEffect(() => {
         checkSystem();
-    }, []);
+        // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, [token]);
 
     return (
         <main className="min-h-screen relative overflow-hidden bg-cyber-dark text-white p-8">
@@ -191,5 +201,13 @@ export default function StatusPage() {
                 </div>
             </div>
         </main>
+    );
+}
+
+export default function StatusPage() {
+    return (
+        <Suspense fallback={<div className="min-h-screen bg-cyber-dark" />}>
+            <StatusPageContent />
+        </Suspense>
     );
 }

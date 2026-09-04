@@ -2,9 +2,8 @@ import { NextRequest, NextResponse } from 'next/server';
 import tls from 'tls';
 import { parse } from 'tldts';
 import { assertPublicHttpUrl, SsrfBlockedError } from '@/lib/server/ssrfGuard';
-import { ApiError, enforceRateLimit, requireUrlBody, ssrfBlockedResponse, withCache } from '@/lib/server/apiHelpers';
+import { ApiError, enforceRateLimit, internalErrorResponse, requireUrlBody, ssrfBlockedResponse, withCache } from '@/lib/server/apiHelpers';
 import type { DomainInfo, SslInfo } from '@/types';
-import type { ErrorResponse } from '@/types/api';
 
 export const runtime = 'nodejs';
 export const maxDuration = 20;
@@ -152,7 +151,6 @@ export async function POST(request: NextRequest) {
         if (error instanceof ApiError) {
             return NextResponse.json(error.body, { status: error.status });
         }
-        const body: ErrorResponse = { success: false, code: 'internal', error: 'فشل جلب معلومات النطاق' };
-        return NextResponse.json(body, { status: 500 });
+        return internalErrorResponse('فشل جلب معلومات النطاق');
     }
 }

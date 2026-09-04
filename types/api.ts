@@ -7,10 +7,11 @@
 // instead of displaying server-side Arabic text regardless of the user's
 // selected UI language.
 
-export type SourceStatus = 'ok' | 'skipped' | 'error';
+import type { SourceStatus } from '@/types';
 
 /** Base shape every source route's success response extends - e.g.
- * `{ success: true, status: 'ok', stats: {...} }` for /api/virustotal. */
+ * `{ success: true, status: 'ok', stats: {...} }` for /api/virustotal.
+ * Extend it with a route's own extra fields: `SourceResponse & { stats?: VTStats }`. */
 export interface SourceResponse {
     success: true;
     status: SourceStatus;

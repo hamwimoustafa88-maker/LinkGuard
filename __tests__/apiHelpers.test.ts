@@ -96,7 +96,7 @@ describe('withCache', () => {
 
     it('accepts a ttlMs resolver function computed from the result (D11)', async () => {
         vi.useFakeTimers();
-        const compute = vi.fn().mockResolvedValue({ status: 'partial' });
+        const compute = vi.fn<() => Promise<{ status: string }>>().mockResolvedValue({ status: 'partial' });
         const key = `withcache-${Math.random()}`;
 
         await withCache('test', key, compute, {
