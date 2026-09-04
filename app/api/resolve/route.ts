@@ -10,6 +10,16 @@ export const maxDuration = 45;
 const MAX_HOPS = 8;
 const HOP_TIMEOUT_MS = 5000;
 
+// Users very often paste a bare domain ("facebook.com") with no scheme.
+// `new URL()` inside assertPublicHttpUrl then throws (it's not an absolute
+// URL), which previously surfaced as the exact same "blocked - unsafe
+// internal address" message as a real SSRF hit - misleading for what's
+// simply a missing https://. Default to https, matching what a browser
+// address bar does for the same input.
+function normalizeUrl(raw: string): string {
+    return /^https?:\/\//i.test(raw) ? raw : `https://${raw}`;
+}
+
 async function followRedirects(startUrl: string): Promise<{ finalUrl: string; chain: RedirectHop[]; truncated: boolean }> {
     const chain: RedirectHop[] = [];
     let current = startUrl;
@@ -49,7 +59,7 @@ export async function POST(request: NextRequest) {
 
     try {
         const body = await requireUrlBody<{ url: string }>(request);
-        url = body.url;
+        url = normalizeUrl(body.url);
 
         try {
             const { finalUrl, chain, truncated } = await followRedirects(url);
