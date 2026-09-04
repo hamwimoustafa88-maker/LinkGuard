@@ -2,6 +2,7 @@
 
 import { useEffect, Suspense } from 'react';
 import { useSearchParams } from 'next/navigation';
+import Link from 'next/link';
 import { Sparkles, ShieldCheck } from 'lucide-react';
 import HeroSection from '@/components/HeroSection';
 import StatusTerminal from '@/components/StatusTerminal';
@@ -106,6 +107,9 @@ function HomeContent() {
                     </div>
                     <div className="text-gray-500 text-sm mt-4">
                         <p>{t('footerCopy')}</p>
+                        <Link href="/privacy" className="text-gray-500 hover:text-cyber-safe underline transition-colors mt-2 inline-block">
+                            {t('privacyPolicy')}
+                        </Link>
                     </div>
                 </footer>
             </div>

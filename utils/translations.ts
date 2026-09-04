@@ -20,6 +20,7 @@ const ar = {
         disclaimerTitle: '⚠️ إخلاء مسؤولية هام',
         disclaimerText: 'فحص الروابط لا يعني الموافقة على محتواها. الدخول إلى أي رابط يكون على مسؤوليتك الخاصة. النتائج تعتمد على قواعد بيانات خارجية وقد لا تكون دقيقة بنسبة 100%.',
         footerCopy: '© 2026 LinkGuard - كاشف الروابط | حماية متقدمة ضد التهديدات الإلكترونية',
+        privacyPolicy: 'سياسة الخصوصية',
 
         // Status
         statusUnshortening: 'جاري فك اختصار الرابط...',
@@ -203,6 +204,7 @@ const en: Record<TranslationKey, string> = {
         disclaimerTitle: '⚠️ Important Disclaimer',
         disclaimerText: 'Scanning links does not imply approval of their content. Accessing any link is at your own risk. Results depend on external databases and may not be 100% accurate.',
         footerCopy: '© 2026 LinkGuard - Link Detector | Advanced protection against cyber threats',
+        privacyPolicy: 'Privacy Policy',
 
         // Status
         statusUnshortening: 'Unshortening URL...',
