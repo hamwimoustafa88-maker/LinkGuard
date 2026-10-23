@@ -19,7 +19,10 @@ const ar = {
         scanInfo: 'نقوم بفحص أكثر من 70 قاعدة بيانات للحماية من البرمجيات الخبيثة والتصيد الاحتيالي',
         disclaimerTitle: '⚠️ إخلاء مسؤولية هام',
         disclaimerText: 'فحص الروابط لا يعني الموافقة على محتواها. الدخول إلى أي رابط يكون على مسؤوليتك الخاصة. النتائج تعتمد على قواعد بيانات خارجية وقد لا تكون دقيقة بنسبة 100%.',
-        footerCopy: '© 2026 LinkGuard - كاشف الروابط | حماية متقدمة ضد التهديدات الإلكترونية',
+        footerCopy: '© 2026 LinkGuard. جميع الحقوق محفوظة.',
+        contactUs: 'تواصل معنا',
+        footerInitiative: 'إحدى مبادرات منصة',
+        footerPlatformName: 'ScoutHub',
         privacyPolicy: 'سياسة الخصوصية',
 
         // Status
@@ -203,7 +206,10 @@ const en: Record<TranslationKey, string> = {
         scanInfo: 'We scan over 70 databases to protect against malware and phishing',
         disclaimerTitle: '⚠️ Important Disclaimer',
         disclaimerText: 'Scanning links does not imply approval of their content. Accessing any link is at your own risk. Results depend on external databases and may not be 100% accurate.',
-        footerCopy: '© 2026 LinkGuard - Link Detector | Advanced protection against cyber threats',
+        footerCopy: '© 2026 LinkGuard. All rights reserved.',
+        contactUs: 'Contact us',
+        footerInitiative: 'An initiative of the',
+        footerPlatformName: 'ScoutHub platform',
         privacyPolicy: 'Privacy Policy',
 
         // Status

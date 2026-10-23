@@ -4,6 +4,7 @@ import './globals.css';
 import Providers from '@/components/Providers';
 import ServiceWorkerRegistration from '@/components/ServiceWorkerRegistration';
 import InstallPrompt from '@/components/InstallPrompt';
+import SiteFooter from '@/components/SiteFooter';
 
 // Exposed as --font-*-src (not --font-cairo/--font-tajawal) because Tailwind
 // v4's @theme block owns those names for the font-cairo/font-tajawal
@@ -21,9 +22,31 @@ const tajawal = Tajawal({
     display: 'swap',
 });
 
+const SITE_ORIGIN = process.env.NEXT_PUBLIC_SITE_ORIGIN || 'https://linkguard.scouthub.dev';
+const SITE_TITLE = 'LinkGuard - كاشف الروابط';
+const SITE_DESCRIPTION = 'فحص الروابط من البرمجيات الخبيثة والتصيد الاحتيالي - Scan URLs for malware, phishing, and viruses';
+
 export const metadata: Metadata = {
-    title: 'LinkGuard - كاشف الروابط',
-    description: 'فحص الروابط من البرمجيات الخبيثة والتصيد الاحتيالي - Scan URLs for malware, phishing, and viruses',
+    metadataBase: new URL(SITE_ORIGIN),
+    alternates: { canonical: '/' },
+    openGraph: {
+        type: 'website',
+        url: '/',
+        siteName: 'LinkGuard',
+        title: SITE_TITLE,
+        description: SITE_DESCRIPTION,
+        locale: 'ar_AR',
+        alternateLocale: ['en_US'],
+        images: [{ url: '/og-image.png', width: 1200, height: 630, alt: 'LinkGuard' }],
+    },
+    twitter: {
+        card: 'summary_large_image',
+        title: SITE_TITLE,
+        description: SITE_DESCRIPTION,
+        images: ['/og-image.png'],
+    },
+    title: SITE_TITLE,
+    description: SITE_DESCRIPTION,
     keywords: ['cybersecurity', 'url scanner', 'malware detection', 'phishing', 'أمن سيبراني'],
     manifest: '/manifest.webmanifest',
     appleWebApp: {
@@ -70,6 +93,7 @@ export default function RootLayout({
                 />
                 <Providers>
                     {children}
+                    <SiteFooter />
                     <ServiceWorkerRegistration />
                     <InstallPrompt />
                 </Providers>

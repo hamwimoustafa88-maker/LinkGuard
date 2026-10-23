@@ -1,0 +1,6 @@
+Contact: https://github.com/hamwimoustafa88-maker/LinkGuard/security/advisories/new
+Contact: mailto:hamwi.moustafa88@gmail.com
+Expires: 2027-10-23T00:00:00.000Z
+Preferred-Languages: ar, en
+Canonical: https://linkguard.scouthub.dev/.well-known/security.txt
+Policy: https://github.com/hamwimoustafa88-maker/LinkGuard/blob/main/SECURITY.md

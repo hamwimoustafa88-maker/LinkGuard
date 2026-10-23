@@ -1,6 +1,7 @@
 'use client';
 
 import { useEffect, useRef } from 'react';
+import { Capacitor } from '@capacitor/core';
 import ShareTarget from '@/lib/nativeShareTarget';
 
 interface ShareTargetListenerProps {
@@ -12,9 +13,11 @@ interface ShareTargetListenerProps {
  * menu) is scanned immediately, whether it launched the app (cold start) or
  * arrived while the app was already open (warm start). See
  * android/app/src/main/java/dev/scouthub/linkguard/ShareTargetPlugin.java
- * and lib/nativeShareTarget.ts. A no-op on the web - Capacitor's web
- * fallback resolves getSharedUrl() to `{ url: null }` and addListener() to
- * a harmless no-op handle. */
+ * and lib/nativeShareTarget.ts. A no-op on the web: with no web
+ * implementation registered, Capacitor rejects every call with '"ShareTarget"
+ * plugin is not implemented on web', which surfaced as unhandled promise
+ * rejections in the browser console - so the native bridge is only touched
+ * on a native platform. */
 export default function ShareTargetListener({ onUrl }: ShareTargetListenerProps) {
     // A ref keeps the effect below subscribing exactly once: `onUrl` (the
     // useScan hook's `scan`) is a new function identity every render, and
@@ -27,11 +30,15 @@ export default function ShareTargetListener({ onUrl }: ShareTargetListenerProps)
     });
 
     useEffect(() => {
+        if (!Capacitor.isNativePlatform()) return;
+
         let cancelled = false;
 
-        ShareTarget.getSharedUrl().then(({ url }) => {
-            if (!cancelled && url) onUrlRef.current(url);
-        });
+        ShareTarget.getSharedUrl()
+            .then(({ url }) => {
+                if (!cancelled && url) onUrlRef.current(url);
+            })
+            .catch(() => {});
 
         const listenerPromise = ShareTarget.addListener('shareReceived', ({ url }) => {
             onUrlRef.current(url);
@@ -39,7 +46,7 @@ export default function ShareTargetListener({ onUrl }: ShareTargetListenerProps)
 
         return () => {
             cancelled = true;
-            listenerPromise.then((handle) => handle.remove());
+            listenerPromise.then((handle) => handle.remove()).catch(() => {});
         };
     }, []);
 

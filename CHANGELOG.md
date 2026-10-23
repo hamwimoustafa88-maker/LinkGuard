@@ -9,6 +9,14 @@ A full pass to prepare LinkGuard for its public release: the toolchain, the API 
 the client were each brought current and hardened. Highlights below; see the git history for
 the complete, commit-by-commit record.
 
+### Footer & Kashef audit fixes · الفوتر وإصلاحات فحص كاشف
+
+- New site-wide footer (`components/SiteFooter.tsx`, mounted in `app/layout.tsx`): copyright line and "an initiative of the ScoutHub platform" with logo and link, plus privacy / status / contact links.
+- Security headers (CSP, `X-Content-Type-Options`, `X-Frame-Options`, `Referrer-Policy`, `Permissions-Policy`, COOP/CORP, HSTS with `includeSubDomains`) in `next.config.js`; HTML pages no longer answer `Access-Control-Allow-Origin: *`.
+- Landing page is now prerendered as real HTML (the `?url=` handler moved into its own Suspense boundary) instead of a bare "Loading..." fallback.
+- Added canonical URL, Open Graph / Twitter tags, and `/.well-known/security.txt`.
+- Fixed the `"ShareTarget" plugin is not implemented on web` console exception on the web build.
+
 ### ⚠️ Behavior change · تغيير في السلوك
 
 - **`/api/resolve` no longer silently passes through an unresolved URL as a "clean" result.**

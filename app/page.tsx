@@ -2,7 +2,6 @@
 
 import { useEffect, Suspense } from 'react';
 import { useSearchParams } from 'next/navigation';
-import Link from 'next/link';
 import { Sparkles, ShieldCheck } from 'lucide-react';
 import HeroSection from '@/components/HeroSection';
 import StatusTerminal from '@/components/StatusTerminal';
@@ -17,24 +16,38 @@ import { useScan } from '@/hooks/useScan';
 import { usePullToRefresh } from '@/hooks/usePullToRefresh';
 import { ScanStatus } from '@/types';
 
-function HomeContent() {
-    const { t } = useLanguage();
+/** Scans the link in `?url=` (used by the Android share target and
+ * deep links). Lives in its own component because useSearchParams() forces
+ * everything up to the nearest Suspense boundary to render on the client
+ * only - keeping it out of HomeContent lets the landing page itself be
+ * prerendered into real HTML (headings, footer, scan form) for crawlers and
+ * first paint, instead of a bare "Loading..." fallback. */
+function UrlParamScanner({ status, scan }: { status: ScanStatus; scan: (url: string) => void }) {
     const searchParams = useSearchParams();
-    const { scanResult, scan } = useScan();
-
-    usePullToRefresh();
 
     useEffect(() => {
         const urlParam = searchParams.get('url');
-        if (urlParam && scanResult.status === ScanStatus.IDLE) {
+        if (urlParam && status === ScanStatus.IDLE) {
             scan(urlParam);
         }
         // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [searchParams]);
 
+    return null;
+}
+
+function HomeContent() {
+    const { t } = useLanguage();
+    const { scanResult, scan } = useScan();
+
+    usePullToRefresh();
+
     return (
         <main className="min-h-screen relative overflow-hidden flex flex-col">
             <ShareTargetListener onUrl={scan} />
+            <Suspense fallback={null}>
+                <UrlParamScanner status={scanResult.status} scan={scan} />
+            </Suspense>
 
             {/* Background effects */}
             <div className="fixed inset-0 bg-linear-to-br from-cyber-dark via-cyber-navy to-cyber-dark" />
@@ -42,10 +55,10 @@ function HomeContent() {
 
             <div className="relative z-10 container mx-auto px-4 py-8 flex-1 flex flex-col">
                 {/* Navbar / Top Bar */}
-                <div className="flex justify-end items-center gap-3 mb-8">
+                <nav aria-label="LinkGuard" className="flex justify-end items-center gap-3 mb-8">
                     <GitHubLink />
                     <LanguageToggle />
-                </div>
+                </nav>
 
                 {/* Header - Hidden when scan is active/complete to save space */}
                 {scanResult.status === ScanStatus.IDLE && (
@@ -107,12 +120,6 @@ function HomeContent() {
                             {t('disclaimerText')}
                         </p>
                     </div>
-                    <div className="text-gray-500 text-sm mt-4">
-                        <p>{t('footerCopy')}</p>
-                        <Link href="/privacy" className="text-gray-500 hover:text-cyber-safe underline transition-colors mt-2 inline-block">
-                            {t('privacyPolicy')}
-                        </Link>
-                    </div>
                 </footer>
             </div>
         </main>
@@ -120,9 +127,5 @@ function HomeContent() {
 }
 
 export default function Home() {
-    return (
-        <Suspense fallback={<div className="min-h-screen bg-cyber-dark text-white flex items-center justify-center">Loading...</div>}>
-            <HomeContent />
-        </Suspense>
-    );
+    return <HomeContent />;
 }
