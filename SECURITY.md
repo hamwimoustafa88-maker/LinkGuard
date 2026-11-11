@@ -14,6 +14,13 @@ This lets us assess and fix the issue before it becomes public.
 [**التنبيهات الأمنية**](https://github.com/hamwimoustafa88-maker/LinkGuard/security/advisories/new)
 في GitHub، مما يتيح لنا تقييم المشكلة وإصلاحها قبل أن تصبح علنية.*
 
+To report by email, you can encrypt it with our PGP key, published at
+[`/.well-known/pgp-key.txt`](https://linkguard.scouthub.dev/.well-known/pgp-key.txt).
+The same key signs [`security.txt`](https://linkguard.scouthub.dev/.well-known/security.txt).
+Key fingerprint: `2F4C FBBA 1D35 A1A0 EE58  B8D3 3FD0 4FC6 2575 CACE`
+
+*للإبلاغ عبر البريد يمكنك تشفير رسالتك بمفتاح PGP أعلاه، وهو المفتاح نفسه الموقِّع على `security.txt`.*
+
 When reporting, please include:
 
 - A description of the vulnerability and its impact.

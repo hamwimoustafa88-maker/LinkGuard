@@ -1,6 +1,17 @@
+-----BEGIN PGP SIGNED MESSAGE-----
+Hash: SHA512
+
 Contact: https://github.com/hamwimoustafa88-maker/LinkGuard/security/advisories/new
 Contact: mailto:hamwi.moustafa88@gmail.com
 Expires: 2027-10-23T00:00:00.000Z
+Encryption: https://linkguard.scouthub.dev/.well-known/pgp-key.txt
 Preferred-Languages: ar, en
 Canonical: https://linkguard.scouthub.dev/.well-known/security.txt
 Policy: https://github.com/hamwimoustafa88-maker/LinkGuard/blob/main/SECURITY.md
+-----BEGIN PGP SIGNATURE-----
+
+iHUEARYKAB0WIQQvTPu6HTWhoO5YuNM/0E/GJXXKzgUCavR2WwAKCRA/0E/GJXXK
+zt6sAPwKnm5b5UxSQHNDZrzJN4DBdquth31TOXKTNiOO0kJ0tAEA/f7Bk7x7wl9o
+QQYmM9Nmh+NkcLUepDXHzIZx8PUv/QU=
+=Oibd
+-----END PGP SIGNATURE-----

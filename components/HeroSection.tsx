@@ -1,11 +1,17 @@
 'use client';
 
 import { useState } from 'react';
+import dynamic from 'next/dynamic';
 import { motion } from 'framer-motion';
 import { Search, Shield, Camera, ClipboardPaste } from 'lucide-react';
-import QrScannerModal from './QrScannerModal';
 import { useLanguage } from './LanguageContext';
 import { useAndroidBackButton } from '@/hooks/useAndroidBackButton';
+
+// The QR scanner pulls in html5-qrcode (~100 KiB) and the Capacitor camera
+// plugin, which most visitors never use - load it only once the camera button
+// is pressed (and warm the chunk on hover/focus so opening feels instant).
+const loadQrScannerModal = () => import('./QrScannerModal');
+const QrScannerModal = dynamic(loadQrScannerModal, { ssr: false });
 
 interface HeroSectionProps {
     onScan: (url: string) => void;
@@ -17,6 +23,14 @@ export default function HeroSection({ onScan, isScanning, isCompact = false }: H
     const { t } = useLanguage();
     const [url, setUrl] = useState('');
     const [isQrModalOpen, setIsQrModalOpen] = useState(false);
+    // Stays true after the first open, so the modal remains mounted and its
+    // exit animation (AnimatePresence inside QrScannerModal) still plays.
+    const [hasOpenedQr, setHasOpenedQr] = useState(false);
+
+    const openQrModal = () => {
+        setHasOpenedQr(true);
+        setIsQrModalOpen(true);
+    };
 
     // Hardware back button on Android: close the QR scanner first if it's
     // open, instead of exiting the app or navigating away mid-scan.
@@ -102,12 +116,15 @@ export default function HeroSection({ onScan, isScanning, isCompact = false }: H
                         {/* QR Scanner Button */}
                         <motion.button
                             type="button"
-                            onClick={() => setIsQrModalOpen(true)}
+                            onClick={openQrModal}
+                            onPointerEnter={loadQrScannerModal}
+                            onFocus={loadQrScannerModal}
                             disabled={isScanning}
                             whileHover={{ scale: 1.05 }}
                             whileTap={{ scale: 0.95 }}
                             className={`relative group bg-cyber-navy/90 border-2 border-cyber-safe/30 rounded-2xl hover:border-cyber-safe transition-all duration-300 disabled:opacity-50 ${isCompact ? 'px-4 py-4' : 'px-6 py-6'}`}
-                            title={t('scanInfo')}
+                            title={t('qrScanButton')}
+                            aria-label={t('qrScanButton')}
                         >
                             <div className="absolute -inset-1 bg-linear-to-r from-cyber-safe to-cyber-glow rounded-2xl blur-sm opacity-0 group-hover:opacity-30 transition duration-300" />
                             <Camera className={`relative text-cyber-safe ${isCompact ? 'w-6 h-6' : 'w-7 h-7'}`} />
@@ -139,11 +156,13 @@ export default function HeroSection({ onScan, isScanning, isCompact = false }: H
                 </div>
             </form>
 
-            <QrScannerModal
-                isOpen={isQrModalOpen}
-                onClose={() => setIsQrModalOpen(false)}
-                onScanSuccess={handleQrScan}
-            />
+            {hasOpenedQr && (
+                <QrScannerModal
+                    isOpen={isQrModalOpen}
+                    onClose={() => setIsQrModalOpen(false)}
+                    onScanSuccess={handleQrScan}
+                />
+            )}
 
             {/* Info text - hide when compact */}
             {!isCompact && (

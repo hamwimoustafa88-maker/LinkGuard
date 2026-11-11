@@ -1,30 +1,10 @@
 const isMobile = process.env.MOBILE_BUILD === '1';
-const isDev = process.env.NODE_ENV !== 'production';
 const siteOrigin = process.env.NEXT_PUBLIC_SITE_ORIGIN || 'https://linkguard.scouthub.dev';
 
-// 'unsafe-inline' for scripts is needed by Next's inline hydration payload and
-// the JSON-LD block in app/layout.tsx; a nonce-based policy would force every
-// page into dynamic rendering. Everything else is locked to same-origin -
-// the only third-party resource the UI loads is the urlscan.io screenshot.
-const csp = [
-    "default-src 'self'",
-    `script-src 'self' 'unsafe-inline'${isDev ? " 'unsafe-eval'" : ''}`,
-    "style-src 'self' 'unsafe-inline'",
-    "img-src 'self' data: blob: https://urlscan.io",
-    "font-src 'self' data:",
-    "connect-src 'self'",
-    "media-src 'self' blob:",
-    "worker-src 'self' blob:",
-    "manifest-src 'self'",
-    "object-src 'none'",
-    "base-uri 'self'",
-    "form-action 'self'",
-    "frame-ancestors 'none'",
-    ...(isDev ? [] : ['upgrade-insecure-requests']),
-].join('; ');
-
+// Content-Security-Policy is NOT set here: it carries a fresh per-request
+// nonce (no 'unsafe-inline' for scripts), so proxy.ts generates it for every
+// page request - see buildCsp() there.
 const securityHeaders = [
-    { key: 'Content-Security-Policy', value: csp },
     { key: 'X-Content-Type-Options', value: 'nosniff' },
     { key: 'X-Frame-Options', value: 'DENY' },
     { key: 'Referrer-Policy', value: 'strict-origin-when-cross-origin' },
@@ -32,7 +12,9 @@ const securityHeaders = [
     { key: 'Permissions-Policy', value: 'camera=(self), microphone=(), geolocation=(), payment=(), usb=()' },
     { key: 'Cross-Origin-Opener-Policy', value: 'same-origin' },
     { key: 'Cross-Origin-Resource-Policy', value: 'same-origin' },
-    { key: 'Strict-Transport-Security', value: 'max-age=63072000; includeSubDomains' },
+    // `preload` adds no new commitment: the parent zone scouthub.dev is already
+    // on the HSTS preload list (includeSubDomains), which covers this host.
+    { key: 'Strict-Transport-Security', value: 'max-age=63072000; includeSubDomains; preload' },
 ];
 
 /** @type {import('next').NextConfig} */

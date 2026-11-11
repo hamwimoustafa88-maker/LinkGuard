@@ -17,6 +17,16 @@ the complete, commit-by-commit record.
 - Added canonical URL, Open Graph / Twitter tags, and `/.well-known/security.txt`.
 - Fixed the `"ShareTarget" plugin is not implemented on web` console exception on the web build.
 
+### Kashef full-scan fixes (Nov 2026) · إصلاحات الفحص الكامل من كاشف
+
+- **Strict CSP:** `script-src` no longer allows `'unsafe-inline'`. `proxy.ts` now issues a fresh per-request nonce with `'strict-dynamic'`, and Next.js stamps it on every script it emits. As a result, web pages render at request time instead of being prerendered. The mobile static export is unaffected.
+- HSTS now sends `preload`. The parent zone `scouthub.dev` is already on the preload list.
+- New `/about` and `/terms` pages, plus a hero landmark, an About section, and an FAQ on the landing page. The top bar and footer link to all of them.
+- `robots.txt`, `sitemap.xml`, and `/llms.txt` were added, along with Organization / WebSite / author structured data and an author meta tag.
+- The disclaimer is now an `<aside>` rather than a second `<footer>`, and the install prompt is an `<aside>` landmark. Footer and prompt tap targets are now 44px.
+- The QR scanner (`html5-qrcode`) is lazy-loaded on first use instead of being shipped in the landing bundle.
+- `/.well-known/security.txt` is now PGP-signed (clearsign, SHA-512). It gains an `Encryption:` field pointing to the public key at `/.well-known/pgp-key.txt` (fingerprint `2F4C FBBA 1D35 A1A0 EE58 B8D3 3FD0 4FC6 2575 CACE`). Re-sign the file after any edit; an edit without re-signing breaks the signature.
+
 ### ⚠️ Behavior change · تغيير في السلوك
 
 - **`/api/resolve` no longer silently passes through an unresolved URL as a "clean" result.**

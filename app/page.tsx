@@ -2,11 +2,13 @@
 
 import { useEffect, Suspense } from 'react';
 import { useSearchParams } from 'next/navigation';
+import Link from 'next/link';
 import { Sparkles, ShieldCheck } from 'lucide-react';
 import HeroSection from '@/components/HeroSection';
 import StatusTerminal from '@/components/StatusTerminal';
 import VerdictDashboard from '@/components/VerdictDashboard';
 import EducationFooter from '@/components/EducationFooter';
+import AboutFaqSection from '@/components/AboutFaqSection';
 import LanguageToggle from '@/components/LanguageToggle';
 import GitHubLink from '@/components/GitHubLink';
 import ScanHistory from '@/components/ScanHistory';
@@ -55,14 +57,24 @@ function HomeContent() {
 
             <div className="relative z-10 container mx-auto px-4 py-8 flex-1 flex flex-col">
                 {/* Navbar / Top Bar */}
-                <nav aria-label="LinkGuard" className="flex justify-end items-center gap-3 mb-8">
-                    <GitHubLink />
-                    <LanguageToggle />
+                <nav aria-label="LinkGuard" className="flex justify-between items-center gap-3 mb-8">
+                    <div className="flex items-center gap-1 text-sm font-medium">
+                        <Link href="/#about" className="inline-flex min-h-11 items-center px-3 text-gray-300 hover:text-cyber-safe transition-colors">
+                            {t('aboutNav')}
+                        </Link>
+                        <Link href="/#faq" className="inline-flex min-h-11 items-center px-3 text-gray-300 hover:text-cyber-safe transition-colors">
+                            {t('faqNav')}
+                        </Link>
+                    </div>
+                    <div className="flex items-center gap-3">
+                        <GitHubLink />
+                        <LanguageToggle />
+                    </div>
                 </nav>
 
-                {/* Header - Hidden when scan is active/complete to save space */}
+                {/* Hero banner - hidden when scan is active/complete to save space */}
                 {scanResult.status === ScanStatus.IDLE && (
-                    <header className="text-center mb-16 mt-4 flex flex-col items-center">
+                    <section id="hero" aria-label={t('heroLabel')} className="hero text-center mb-16 mt-4 flex flex-col items-center">
                         <div className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-cyber-safe/10 border border-cyber-safe/30 text-cyber-safe text-sm font-medium mb-6">
                             <Sparkles className="w-4 h-4" />
                             <span>{t('poweredByAI')}</span>
@@ -75,7 +87,7 @@ function HomeContent() {
                         </div>
                         <p className="text-2xl text-cyber-glow font-tajawal">{t('appSubtitle')}</p>
                         <p className="text-gray-400 mt-2">{t('appDescription')}</p>
-                    </header>
+                    </section>
                 )}
 
                 {/* Hero Section */}
@@ -107,11 +119,15 @@ function HomeContent() {
                     </div>
                 )}
 
+                {/* About us + FAQ (landing screen only, so results stay focused) */}
+                {scanResult.status === ScanStatus.IDLE && <AboutFaqSection />}
+
                 {/* Education Footer */}
                 <EducationFooter />
 
-                {/* Disclaimer and Footer */}
-                <footer className="mt-auto text-center pb-8 border-t border-gray-800 pt-8">
+                {/* Disclaimer - an <aside>, not a <footer>: the site-wide
+                    <SiteFooter> in app/layout.tsx is the page's real footer. */}
+                <aside aria-label={t('disclaimerTitle')} className="mt-auto text-center pb-8 border-t border-gray-800 pt-8">
                     <div className="bg-red-900/10 border border-red-500/20 rounded-lg p-4 inline-block max-w-2xl mx-auto mb-8">
                         <p className="text-red-400 font-bold text-lg mb-1">
                             {t('disclaimerTitle')}
@@ -120,7 +136,7 @@ function HomeContent() {
                             {t('disclaimerText')}
                         </p>
                     </div>
-                </footer>
+                </aside>
             </div>
         </main>
     );

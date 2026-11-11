@@ -97,7 +97,10 @@ export default function InstallPrompt() {
     return (
         <AnimatePresence>
             {visible && (
-                <motion.div
+                // <aside> (a landmark), so the banner's text isn't orphaned
+                // outside header/nav/main/footer for screen-reader users.
+                <motion.aside
+                    aria-label={t('installTitle')}
                     initial={{ y: 100, opacity: 0 }}
                     animate={{ y: 0, opacity: 1 }}
                     exit={{ y: 100, opacity: 0 }}
@@ -126,14 +129,14 @@ export default function InstallPrompt() {
                                     <div className="flex gap-3 mt-3">
                                         <button
                                             onClick={handleInstall}
-                                            className="flex items-center gap-2 px-4 py-2 bg-cyber-safe text-cyber-dark rounded-lg font-bold text-sm hover:bg-cyber-glow transition-colors"
+                                            className="flex min-h-11 items-center gap-2 px-4 py-2 bg-cyber-safe text-cyber-dark rounded-lg font-bold text-sm hover:bg-cyber-glow transition-colors"
                                         >
                                             <Download className="w-4 h-4" />
                                             {t('installButton')}
                                         </button>
                                         <button
                                             onClick={dismiss}
-                                            className="px-4 py-2 text-gray-400 hover:text-white text-sm transition-colors"
+                                            className="min-h-11 px-4 py-2 text-gray-400 hover:text-white text-sm transition-colors"
                                         >
                                             {t('installLater')}
                                         </button>
@@ -143,14 +146,14 @@ export default function InstallPrompt() {
 
                             <button
                                 onClick={dismiss}
-                                className="text-gray-500 hover:text-white transition-colors shrink-0"
+                                className="flex h-11 w-11 -m-2 items-center justify-center text-gray-500 hover:text-white transition-colors shrink-0"
                                 aria-label={t('installLater')}
                             >
                                 <X className="w-5 h-5" />
                             </button>
                         </div>
                     </div>
-                </motion.div>
+                </motion.aside>
             )}
         </AnimatePresence>
     );

@@ -1,0 +1,17 @@
+# LinkGuard
+
+> LinkGuard (كاشف الروابط) is a free, open-source, bilingual (Arabic/English) tool that checks whether a link is safe before you open it. It unshortens the link, follows its redirects, and combines VirusTotal, Google Safe Browsing, urlscan.io, URLhaus, PhishTank, AbuseIPDB and domain-age/brand-impersonation checks into a single risk score. No account, no tracking; an initiative of the ScoutHub platform.
+
+## Pages
+
+- [Home / scanner](https://linkguard.scouthub.dev/): paste a URL or scan a QR code to get a risk verdict, with an About section and FAQ
+- [About](https://linkguard.scouthub.dev/about): what LinkGuard is, how a scan works, and who is behind it
+- [Privacy policy](https://linkguard.scouthub.dev/privacy): exactly what is sent to which third-party service, and what stays on your device
+- [Terms of use](https://linkguard.scouthub.dev/terms): acceptable use and limitation of liability
+- [Service status](https://linkguard.scouthub.dev/status): live health of each upstream scanning service
+
+## Project
+
+- [Source code (MIT)](https://github.com/hamwimoustafa88-maker/LinkGuard): Next.js web app and Capacitor Android app
+- [Security policy](https://github.com/hamwimoustafa88-maker/LinkGuard/blob/main/SECURITY.md): how to report a vulnerability
+- [ScoutHub](https://scouthub.dev/): the platform behind LinkGuard
