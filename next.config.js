@@ -20,6 +20,8 @@ const securityHeaders = [
 /** @type {import('next').NextConfig} */
 const nextConfig = {
     reactStrictMode: true,
+    // Don't advertise the framework in an X-Powered-By header (fingerprinting).
+    poweredByHeader: false,
     images: {
         // Static export has no server to run the Image Optimization API -
         // required by Next.js whenever output: 'export' is set.

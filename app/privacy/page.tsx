@@ -11,7 +11,7 @@ function Section({ title, children }: { title: string; children: React.ReactNode
     return (
         <section className="mb-8">
             <h2 className="text-xl font-bold text-cyber-safe mb-3">{title}</h2>
-            <div className="text-gray-300 leading-relaxed space-y-2">{children}</div>
+            <div className="text-gray-300 leading-relaxed space-y-2 max-w-[70ch]">{children}</div>
         </section>
     );
 }

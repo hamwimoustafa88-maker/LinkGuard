@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useRef, useState } from 'react';
 import dynamic from 'next/dynamic';
 import { motion } from 'framer-motion';
 import { Search, Shield, Camera, ClipboardPaste } from 'lucide-react';
@@ -22,6 +22,7 @@ interface HeroSectionProps {
 export default function HeroSection({ onScan, isScanning, isCompact = false }: HeroSectionProps) {
     const { t } = useLanguage();
     const [url, setUrl] = useState('');
+    const inputRef = useRef<HTMLInputElement>(null);
     const [isQrModalOpen, setIsQrModalOpen] = useState(false);
     // Stays true after the first open, so the modal remains mounted and its
     // exit animation (AnimatePresence inside QrScannerModal) still plays.
@@ -46,6 +47,10 @@ export default function HeroSection({ onScan, isScanning, isCompact = false }: H
         e.preventDefault();
         if (url.trim()) {
             onScan(url.trim());
+        } else {
+            // The button stays enabled (so it reads as the page's primary call
+            // to action); with nothing to scan it just sends the user to the field.
+            inputRef.current?.focus();
         }
     };
 
@@ -84,6 +89,7 @@ export default function HeroSection({ onScan, isScanning, isCompact = false }: H
                             <div className={`absolute -inset-1 bg-linear-to-r from-cyber-safe to-cyber-glow rounded-2xl blur-sm opacity-25 group-hover:opacity-50 group-focus-within:opacity-100 group-focus-within:duration-300 transition duration-1000 ${isCompact ? 'opacity-20' : ''}`} />
                             <div className="relative">
                                 <input
+                                    ref={inputRef}
                                     type="text"
                                     value={url}
                                     onChange={(e) => setUrl(e.target.value)}
@@ -134,7 +140,7 @@ export default function HeroSection({ onScan, isScanning, isCompact = false }: H
                     {/* Scan button */}
                     <motion.button
                         type="submit"
-                        disabled={isScanning || !url.trim()}
+                        disabled={isScanning}
                         whileHover={{ scale: 1.02 }}
                         whileTap={{ scale: 0.98 }}
                         className={`font-bold bg-linear-to-r from-cyber-safe to-emerald-400 text-cyber-dark rounded-2xl disabled:opacity-50 disabled:cursor-not-allowed relative overflow-hidden group hover:from-emerald-400 hover:to-cyber-safe hover:shadow-[0_0_30px_rgba(0,255,136,0.5)] transition-all duration-300 ${isCompact ? 'px-8 py-4 text-lg w-full sm:w-auto shrink-0' : 'w-full mt-6 px-8 py-5 text-2xl'}`}

@@ -57,7 +57,7 @@ function HomeContent() {
 
             <div className="relative z-10 container mx-auto px-4 py-8 flex-1 flex flex-col">
                 {/* Navbar / Top Bar */}
-                <nav aria-label="LinkGuard" className="flex justify-between items-center gap-3 mb-8">
+                <nav aria-label="LinkGuard" className="flex justify-between items-center gap-3 mb-4 sm:mb-8">
                     <div className="flex items-center gap-1 text-sm font-medium">
                         <Link href="/#about" className="inline-flex min-h-11 items-center px-3 text-gray-300 hover:text-cyber-safe transition-colors">
                             {t('aboutNav')}
@@ -74,18 +74,18 @@ function HomeContent() {
 
                 {/* Hero banner - hidden when scan is active/complete to save space */}
                 {scanResult.status === ScanStatus.IDLE && (
-                    <section id="hero" aria-label={t('heroLabel')} className="hero text-center mb-16 mt-4 flex flex-col items-center">
+                    <section id="hero" aria-label={t('heroLabel')} className="hero text-center mb-8 sm:mb-16 mt-2 sm:mt-4 flex flex-col items-center">
                         <div className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-cyber-safe/10 border border-cyber-safe/30 text-cyber-safe text-sm font-medium mb-6">
                             <Sparkles className="w-4 h-4" />
                             <span>{t('poweredByAI')}</span>
                         </div>
                         <div className="flex items-center justify-center gap-4 mb-4">
-                            <ShieldCheck className="w-14 h-14 text-cyber-safe" />
-                            <h1 className="text-6xl font-bold bg-linear-to-r from-cyber-safe to-cyber-glow bg-clip-text text-transparent">
+                            <ShieldCheck className="w-10 h-10 sm:w-14 sm:h-14 text-cyber-safe" />
+                            <h1 className="text-5xl sm:text-6xl font-bold bg-linear-to-r from-cyber-safe to-cyber-glow bg-clip-text text-transparent">
                                 {t('appTitle')}
                             </h1>
                         </div>
-                        <p className="text-2xl text-cyber-glow font-tajawal">{t('appSubtitle')}</p>
+                        <p className="text-xl sm:text-2xl text-cyber-glow font-tajawal">{t('appSubtitle')}</p>
                         <p className="text-gray-400 mt-2">{t('appDescription')}</p>
                     </section>
                 )}

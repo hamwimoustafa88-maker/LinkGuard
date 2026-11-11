@@ -31,17 +31,17 @@ export default function AboutFaqSection() {
                     <Info className="w-6 h-6" aria-hidden="true" />
                     {t('aboutTitle')}
                 </h2>
-                <p className="text-gray-300 leading-relaxed">{t('aboutIntro')}</p>
+                <p className="text-gray-300 leading-relaxed max-w-[70ch]">{t('aboutIntro')}</p>
 
                 <h3 className="text-lg font-bold text-white mt-6 mb-3">{t('aboutHowTitle')}</h3>
-                <ol className="space-y-2 text-gray-300 leading-relaxed list-decimal ps-6">
+                <ol className="space-y-2 text-gray-300 leading-relaxed list-decimal ps-6 max-w-[70ch]">
                     {HOW_STEPS.map((key) => (
                         <li key={key}>{t(key)}</li>
                     ))}
                 </ol>
 
                 <h3 className="text-lg font-bold text-white mt-6 mb-3">{t('aboutWhoTitle')}</h3>
-                <p className="text-gray-300 leading-relaxed">{t('aboutWho')}</p>
+                <p className="text-gray-300 leading-relaxed max-w-[70ch]">{t('aboutWho')}</p>
 
                 <Link
                     href="/about"
@@ -63,7 +63,7 @@ export default function AboutFaqSection() {
                                 <span>{t(q)}</span>
                                 <ChevronDown className="w-5 h-5 shrink-0 text-cyber-safe transition-transform group-open:rotate-180" aria-hidden="true" />
                             </summary>
-                            <p className="px-4 pb-4 text-gray-300 leading-relaxed">{t(a)}</p>
+                            <p className="px-4 pb-4 text-gray-300 leading-relaxed max-w-[70ch]">{t(a)}</p>
                         </details>
                     ))}
                 </div>
