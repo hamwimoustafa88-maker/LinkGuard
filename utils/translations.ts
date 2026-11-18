@@ -22,8 +22,9 @@ const ar = {
         disclaimerText: 'فحص الروابط لا يعني الموافقة على محتواها. الدخول إلى أي رابط يكون على مسؤوليتك الخاصة. النتائج تعتمد على قواعد بيانات خارجية وقد لا تكون دقيقة بنسبة 100%.',
         footerCopy: '© 2026 LinkGuard. جميع الحقوق محفوظة.',
         contactUs: 'تواصل معنا',
-        footerInitiative: 'إحدى مبادرات منصة',
-        footerPlatformName: 'ScoutHub',
+        footerInitiative: 'إحدى مبادرات مختبر',
+        footerPlatformName: 'ScoutHub Lab',
+        footerProjectPage: 'قصة المشروع',
         footerFollowUs: 'تابعنا على وسائل التواصل الاجتماعي',
         privacyPolicy: 'سياسة الخصوصية',
 
@@ -240,8 +241,9 @@ const en: Record<TranslationKey, string> = {
         disclaimerText: 'Scanning links does not imply approval of their content. Accessing any link is at your own risk. Results depend on external databases and may not be 100% accurate.',
         footerCopy: '© 2026 LinkGuard. All rights reserved.',
         contactUs: 'Contact us',
-        footerInitiative: 'An initiative of the',
-        footerPlatformName: 'ScoutHub platform',
+        footerInitiative: 'An initiative of',
+        footerPlatformName: 'ScoutHub Lab',
+        footerProjectPage: 'About the project',
         footerFollowUs: 'Follow us on social media',
         privacyPolicy: 'Privacy Policy',
 

@@ -52,7 +52,7 @@ export const metadata: Metadata = {
     description: SITE_DESCRIPTION,
     authors: [{ name: AUTHOR_NAME, url: AUTHOR_URL }],
     creator: AUTHOR_NAME,
-    publisher: 'ScoutHub',
+    publisher: 'ScoutHub Lab',
     keywords: ['cybersecurity', 'url scanner', 'malware detection', 'phishing', 'أمن سيبراني'],
     manifest: '/manifest.webmanifest',
     appleWebApp: {
@@ -82,7 +82,7 @@ const jsonLd = {
         {
             '@type': 'Organization',
             '@id': ORGANIZATION_ID,
-            name: 'ScoutHub',
+            name: 'ScoutHub Lab',
             url: PLATFORM_URL,
             logo: `${SITE_ORIGIN}/scouthub.svg`,
             sameAs: SOCIAL_LINKS.map((link) => link.href),

@@ -5,6 +5,8 @@
 
 export const SITE_ORIGIN = process.env.NEXT_PUBLIC_SITE_ORIGIN || 'https://linkguard.scouthub.dev';
 export const PLATFORM_URL = 'https://scouthub.dev/';
+/** LinkGuard's page on the lab site: a link to it from every page helps Google tie the two sites together and index it. */
+export const PROJECT_URL = { ar: 'https://scouthub.dev/projects/linkguard/', en: 'https://scouthub.dev/en/projects/linkguard/' } as const;
 export const REPO_URL = 'https://github.com/hamwimoustafa88-maker/LinkGuard';
 export const AUTHOR_NAME = 'Moustafa Hamwi';
 export const AUTHOR_URL = 'https://www.linkedin.com/in/moustafa-hamwi/';

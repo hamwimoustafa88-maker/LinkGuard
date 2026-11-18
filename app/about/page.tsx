@@ -44,8 +44,8 @@ export default function AboutPage() {
 
                 <Section title="من يقف خلف LinkGuard؟">
                     <p>
-                        LinkGuard إحدى مبادرات منصة{' '}
-                        <a href={PLATFORM_URL} target="_blank" rel="noopener noreferrer" className={LINK_CLASS}>ScoutHub</a>،
+                        LinkGuard إحدى مبادرات مختبر{' '}
+                        <a href={PLATFORM_URL} target="_blank" rel="noopener noreferrer" className={LINK_CLASS}>ScoutHub Lab</a>،
                         طوّره{' '}
                         <a href={AUTHOR_URL} target="_blank" rel="noopener noreferrer" className={LINK_CLASS}>مصطفى الحموي</a>،
                         وشيفرته المصدرية متاحة للجميع على{' '}
@@ -94,9 +94,9 @@ export default function AboutPage() {
 
                 <Section title="Who is behind LinkGuard?">
                     <p>
-                        LinkGuard is an initiative of the{' '}
-                        <a href={PLATFORM_URL} target="_blank" rel="noopener noreferrer" className={LINK_CLASS}>ScoutHub</a>{' '}
-                        platform, built by{' '}
+                        LinkGuard is an initiative of{' '}
+                        <a href={PLATFORM_URL} target="_blank" rel="noopener noreferrer" className={LINK_CLASS}>ScoutHub Lab</a>,{' '}
+                        built by{' '}
                         <a href={AUTHOR_URL} target="_blank" rel="noopener noreferrer" className={LINK_CLASS}>{AUTHOR_NAME}</a>.
                         Its source code is public on{' '}
                         <a href={REPO_URL} target="_blank" rel="noopener noreferrer" className={LINK_CLASS}>GitHub</a>{' '}

@@ -4,7 +4,7 @@ import type { ReactNode } from 'react';
 import Image from 'next/image';
 import Link from 'next/link';
 import { useLanguage } from './LanguageContext';
-import { PLATFORM_URL, SOCIAL_LINKS, type SocialName } from '@/lib/siteLinks';
+import { PLATFORM_URL, PROJECT_URL, SOCIAL_LINKS, type SocialName } from '@/lib/siteLinks';
 
 const CONTACT_EMAIL = 'hamwi.moustafa88@gmail.com';
 const FOOTER_LINK = 'inline-flex min-h-11 items-center px-2 underline transition-colors hover:text-cyber-safe';
@@ -29,7 +29,7 @@ const SOCIAL_ICONS: Record<SocialName, ReactNode> = {
 /** Footer links, copyright and "initiative of ScoutHub" line shown at the bottom of every
  * page. Mounted once in app/layout.tsx so new routes get it automatically. */
 export default function SiteFooter() {
-    const { t } = useLanguage();
+    const { t, language } = useLanguage();
 
     return (
         <footer className="relative z-10 text-center text-gray-500 text-sm px-4 pb-8 pt-4">
@@ -78,6 +78,15 @@ export default function SiteFooter() {
                         className="rounded-md"
                     />
                     <span dir="ltr">{t('footerPlatformName')}</span>
+                </a>
+                <span aria-hidden="true">·</span>
+                <a
+                    href={PROJECT_URL[language === 'en' ? 'en' : 'ar']}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="inline-flex min-h-11 items-center underline-offset-4 hover:underline hover:text-cyber-safe transition-colors"
+                >
+                    {t('footerProjectPage')}
                 </a>
             </p>
         </footer>
