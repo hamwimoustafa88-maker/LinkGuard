@@ -224,11 +224,30 @@ for the full guide, and [CHANGELOG.md](CHANGELOG.md) for the notable-changes his
 
 ---
 
+## Made by ScoutHub Lab · من صنع ScoutHub Lab
+
+LinkGuard is built and maintained by [ScoutHub Lab](https://scouthub.dev/en/), a digital innovation lab in Beirut, Lebanon,
+founded by Moustafa Hamwi. The lab builds Arabic-first tools for scouts, NGOs, education and digital safety.
+Project page: [scouthub.dev/en/projects/linkguard](https://scouthub.dev/en/projects/linkguard/) ·
+Live app: [linkguard.scouthub.dev](https://linkguard.scouthub.dev/)
+
+For a full website security audit (headers, TLS, DNS, email protection) with an A+ to F grade, see our
+[Kashef](https://scouthub.dev/en/projects/kashef/).
+
+<div dir="rtl">
+
+يطوّر كاشف الروابط [ScoutHub Lab](https://scouthub.dev/)، مختبر ابتكار رقمي في بيروت أسّسه مصطفى الحموي.
+صفحة المشروع: [scouthub.dev/projects/linkguard](https://scouthub.dev/projects/linkguard/)
+
+</div>
+
+---
+
 ## 📄 License · الترخيص
 
 This project is licensed under the **MIT License** — see the [LICENSE](LICENSE) file for the
 full text. You are free to use, modify, and distribute it, commercially or otherwise, with
-attribution. Copyright © 2026 **Mustafa Al-Hamwi**.
+attribution. Copyright © 2026 **Moustafa Hamwi** ([ScoutHub Lab](https://scouthub.dev/en/)).
 
 *هذا المشروع مرخّص تحت **رخصة MIT** — راجع ملف [LICENSE](LICENSE) للنص الكامل. أنت حر في
 استخدامه وتعديله وتوزيعه، تجارياً أو غير ذلك، مع الإشارة للمصدر. حقوق النشر © 2026 **مصطفى الحموي**.*
@@ -237,7 +256,7 @@ attribution. Copyright © 2026 **Mustafa Al-Hamwi**.
 
 <div align="center">
 
-**© 2026 Mustafa Al-Hamwi · مصطفى الحموي** — Built with 🛡️ for a safer web.
+**© 2026 Moustafa Hamwi · مصطفى الحموي · [ScoutHub Lab](https://scouthub.dev/en/)** — Built with 🛡️ for a safer web.
 
 If LinkGuard helped you, consider giving it a ⭐ on GitHub!
 
